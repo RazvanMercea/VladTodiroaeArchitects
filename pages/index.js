@@ -10,11 +10,11 @@ const MainPage = () => {
       text: "Proiecte construite",
     },
     {
-      image: "/plans.jpg",
+      image: "/plan.jpg",
       text: "Planuri tipizate",
     },
     {
-      image: "/icon.jpeg",
+      image: "/icon.jpg",
       text: "Despre noi",
     },
   ];
@@ -56,14 +56,20 @@ const MainPage = () => {
         {cards.map((card, index) => (
           <div
             key={index}
-            className="max-w-sm w-full bg-[#3D3B3B] rounded-lg shadow-lg overflow-hidden text-center"
+            className="max-w-sm w-full bg-[#3D3B3B] rounded-lg shadow-lg overflow-hidden text-center p-4 
+                       transform transition duration-300 hover:scale-105 hover:shadow-2xl"
           >
-            <div className="py-4 text-white text-xl font-semibold">{card.text}</div>
-            <img
-              src={card.image}
-              alt={card.text}
-              className="w-full h-64 object-cover"
-            />
+            {/* Card text */}
+            <div className="text-white text-xl font-semibold mb-3">{card.text}</div>
+
+            {/* Image with rounded corners inside padding */}
+            <div className="overflow-hidden rounded-lg">
+              <img
+                src={card.image}
+                alt={card.text}
+                className="w-full h-64 object-cover"
+              />
+            </div>
           </div>
         ))}
       </div>
