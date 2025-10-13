@@ -10,11 +10,11 @@ const MainPage = () => {
       text: "Proiecte construite",
     },
     {
-      image: "/plan.jpg",
+      image: "/plans.jpg",
       text: "Planuri tipizate",
     },
     {
-      image: "/icon.jpg",
+      image: "/icon.jpeg",
       text: "Despre noi",
     },
   ];
