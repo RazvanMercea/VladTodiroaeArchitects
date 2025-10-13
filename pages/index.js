@@ -6,7 +6,10 @@ const MainPage = () => {
   return (
     <div className="min-h-screen bg-white">
       {/* Top band */}
-      <div className="w-full bg-gray-700 h-10 flex justify-end items-center px-6">
+      <div
+        className="w-full h-10 flex justify-end items-center px-6"
+        style={{ backgroundColor: "#3D3B3B" }}
+      >
         <button className="text-white font-semibold hover:text-gray-300">
           Login
         </button>
@@ -35,7 +38,7 @@ const MainPage = () => {
 
           {/* Title */}
           <h1 className="text-white text-4xl md:text-5xl font-bold tracking-tight">
-            Vlad Todiroae Architects +
+            Vlad Todiroaie Architects +
           </h1>
         </div>
       </div>
