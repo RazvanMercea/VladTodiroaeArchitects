@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import { Phone, Mail, Eye, EyeOff } from "lucide-react";
 import { useRouter } from "next/router";
 import { auth } from "@/lib/firebase";
-import { signInWithEmailAndPassword } from "firebase/auth";
+import { signInWithEmailAndPassword, signOut } from "firebase/auth";
 import toast from "react-hot-toast";
 
 // Contact info
@@ -25,6 +25,7 @@ const LoginPage = () => {
     }
   }, []);
 
+  // Login function
   const handleLogin = async () => {
     if (!email || !password) {
       toast.error("Va rugam introduceti emailul si parola.");
@@ -34,7 +35,6 @@ const LoginPage = () => {
     try {
       const userCredential = await signInWithEmailAndPassword(auth, email, password);
 
-      // Store the logged-in user in localStorage
       const userData = {
         uid: userCredential.user.uid,
         email: userCredential.user.email,
@@ -44,7 +44,6 @@ const LoginPage = () => {
 
       toast.success("Login reusit!");
       setError("");
-
       router.push("/"); // Redirect to main page
     } catch (err) {
       console.error("Login nereusit:", err);
@@ -52,16 +51,40 @@ const LoginPage = () => {
     }
   };
 
-  // Disable inputs if already logged in
+  // Logout function
+  const handleLogout = () => {
+    if (confirm("Sunteti sigur ca doriti sa va delogati?")) {
+      signOut(auth)
+        .then(() => {
+          localStorage.removeItem("loggedUser");
+          setLoggedUser(null);
+          toast.success("Logout efectuat cu succes!");
+          router.push("/login");
+        })
+        .catch((err) => {
+          console.error("Logout error:", err);
+          toast.error("A aparut o eroare la delogare.");
+        });
+    }
+  };
+
   const isDisabled = !!loggedUser;
 
   return (
     <div className="min-h-screen flex flex-col bg-white">
       {/* Top band */}
       <div
-        className="w-full h-12 flex justify-end items-center px-6 text-sm text-white shadow-md"
+        className="w-full h-12 flex justify-between items-center px-6 text-sm text-white shadow-md"
         style={{ backgroundColor: "#3D3B3B" }}
       >
+        {/* Left side: user email */}
+        <div className="flex items-center gap-2">
+          {loggedUser && (
+            <span className="font-semibold text-white">Conectat ca: {loggedUser.email}</span>
+          )}
+        </div>
+
+        {/* Right side: Home + Login/Logout */}
         <div className="flex items-center gap-4">
           <button
             onClick={() => router.push("/")}
@@ -69,11 +92,22 @@ const LoginPage = () => {
           >
             Home
           </button>
-          <button
-            className="text-white font-semibold hover:text-gray-300 transition"
-          >
-            Login
-          </button>
+
+          {!loggedUser ? (
+            <button
+              onClick={() => router.push("/login")}
+              className="text-white font-semibold hover:text-gray-300 transition"
+            >
+              Login
+            </button>
+          ) : (
+            <button
+              onClick={handleLogout}
+              className="text-white font-semibold hover:text-gray-300 transition"
+            >
+              Logout
+            </button>
+          )}
         </div>
       </div>
 
@@ -96,16 +130,11 @@ const LoginPage = () => {
           <h1 className="text-white text-4xl md:text-5xl font-bold tracking-tight drop-shadow-lg">
             Vlad Todiroaie Architects +
           </h1>
-          {loggedUser && (
-            <p className="text-white mt-2 text-lg">
-              Sunteti conectat ca: <span className="font-semibold">{loggedUser.email}</span>
-            </p>
-          )}
         </div>
       </div>
 
       {/* Login form section */}
-      <div className="flex-grow flex items-center justify-center px-4">
+      <div className="flex-grow flex flex-col items-center justify-center px-4">
         <div className="w-full max-w-md bg-gray-100 p-8 rounded-lg shadow-lg">
           <h2 className="text-2xl font-bold mb-6 text-center text-gray-800">
             Login
@@ -153,15 +182,23 @@ const LoginPage = () => {
             </button>
           </div>
 
-          <button
-            onClick={handleLogin}
-            className={`w-full bg-[#3D3B3B] text-white font-semibold py-2 rounded-md hover:bg-gray-600 transition ${
-              isDisabled ? "opacity-50 cursor-not-allowed hover:bg-[#3D3B3B]" : ""
-            }`}
-            disabled={isDisabled}
-          >
-            Login
-          </button>
+          {!loggedUser && (
+            <button
+              onClick={handleLogin}
+              className="w-full bg-[#3D3B3B] text-white font-semibold py-2 rounded-md hover:bg-gray-600 transition"
+            >
+              Login
+            </button>
+          )}
+
+          {loggedUser && (
+            <button
+              onClick={handleLogout}
+              className="w-full mt-4 bg-red-600 text-white font-semibold py-2 rounded-md hover:bg-red-700 transition"
+            >
+              Logout
+            </button>
+          )}
         </div>
       </div>
 
@@ -186,3 +223,4 @@ const LoginPage = () => {
 };
 
 export default LoginPage;
+

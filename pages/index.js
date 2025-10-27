@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import { db } from "@/lib/firebase";
 import { Phone, Mail } from "lucide-react";
 import { useRouter } from "next/router";
@@ -16,15 +16,30 @@ const CARD_DATA = [
 
 const MainPage = () => {
   const router = useRouter();
+  const [loggedUser, setLoggedUser] = useState(null);
+
+  useEffect(() => {
+    const storedUser = localStorage.getItem("loggedUser");
+    if (storedUser) {
+      setLoggedUser(JSON.parse(storedUser));
+    }
+  }, []);
 
   return (
     <div className="min-h-screen flex flex-col bg-white">
       {/* Top band */}
       <div
-        className="w-full h-12 flex justify-end items-center px-6 text-sm text-white shadow-md"
+        className="w-full h-12 flex justify-between items-center px-6 text-sm text-white shadow-md"
         style={{ backgroundColor: "#3D3B3B" }}
       >
-        {/* Home + Login */}
+        {/* Left side: logged-in user email */}
+        <div className="flex items-center gap-2">
+          {loggedUser && (
+            <span className="font-semibold text-white">Conectat ca: {loggedUser.email}</span>
+          )}
+        </div>
+
+        {/* Right side: Home + Login/Logout */}
         <div className="flex items-center gap-4">
           <button
             onClick={() => router.push("/")}
@@ -32,12 +47,22 @@ const MainPage = () => {
           >
             Home
           </button>
-          <button
-            onClick={() => router.push("/login")}
-            className="text-white font-semibold hover:text-gray-300 transition"
-          >
-            Login
-          </button>
+
+          {!loggedUser ? (
+            <button
+              onClick={() => router.push("/login")}
+              className="text-white font-semibold hover:text-gray-300 transition"
+            >
+              Login
+            </button>
+          ) : (
+            <button
+              onClick={() => router.push("/login")}
+              className="text-white font-semibold hover:text-gray-300 transition"
+            >
+              Logout
+            </button>
+          )}
         </div>
       </div>
 
@@ -107,5 +132,6 @@ const MainPage = () => {
 };
 
 export default MainPage;
+
 
 
