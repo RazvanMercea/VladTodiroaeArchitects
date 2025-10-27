@@ -32,7 +32,10 @@ const MainPage = () => {
           >
             Home
           </button>
-          <button className="text-white font-semibold hover:text-gray-300 transition">
+          <button
+            onClick={() => router.push("/login")}
+            className="text-white font-semibold hover:text-gray-300 transition"
+          >
             Login
           </button>
         </div>
