@@ -3,6 +3,7 @@ import { Phone, Mail, Eye, EyeOff } from "lucide-react";
 import { useRouter } from "next/router";
 import { auth } from "@/lib/firebase";
 import { signInWithEmailAndPassword } from "firebase/auth";
+import toast from "react-hot-toast";
 
 // Contact info
 const CONTACT_PHONE = process.env.NEXT_PUBLIC_CONTACT_PHONE;
@@ -15,20 +16,29 @@ const LoginPage = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState("");
 
+  //Login logic
   const handleLogin = async () => {
     if (!email || !password) {
-      setError("Please fill in both fields.");
+      toast.error("Va rugam introduceti emailul si parola.");
       return;
     }
 
     try {
       const userCredential = await signInWithEmailAndPassword(auth, email, password);
-      console.log("Login successful!", userCredential.user);
+      localStorage.setItem(
+        "loggedUser",
+        JSON.stringify({
+          uid: userCredential.user.uid,
+          email: userCredential.user.email,
+        })
+      );
+      toast.success("Login reusit!");
       setError("");
-      // TODO: redirect to admin/dashboard page
+      router.push("/");//main page redirect
+      
     } catch (err) {
-      console.error("Login failed:", err);
-      setError("Incorrect email or password.");
+      console.error("Login nereusit:", err);
+      toast.error("Email-ul sau parola incorecte.");
     }
   };
 
@@ -78,7 +88,7 @@ const LoginPage = () => {
       <div className="flex-grow flex items-center justify-center px-4">
         <div className="w-full max-w-md bg-gray-100 p-8 rounded-lg shadow-lg">
           <h2 className="text-2xl font-bold mb-6 text-center text-gray-800">
-            Admin Login
+            Login
           </h2>
 
           {error && (
@@ -118,7 +128,7 @@ const LoginPage = () => {
 
           <button
             onClick={handleLogin}
-            className="w-full bg-gray-500 text-white font-semibold py-2 rounded-md hover:bg-gray-600 transition"
+            className="w-full bg-[#3D3B3B] text-white font-semibold py-2 rounded-md hover:bg-gray-600 transition"
           >
             Login
           </button>
