@@ -1,39 +1,48 @@
 import React from "react";
 import { db } from "@/lib/firebase";
 import { Phone, Mail } from "lucide-react";
+import { useRouter } from "next/router";
 
 // Contact info
 const CONTACT_PHONE = process.env.NEXT_PUBLIC_CONTACT_PHONE;
 const CONTACT_EMAIL = process.env.NEXT_PUBLIC_CONTACT_EMAIL;
 
-console.log("Phone:", CONTACT_PHONE);
-console.log("Email:", CONTACT_EMAIL);
-
 // Card data
 const CARD_DATA = [
-  {
-    image: "/constructions.jpeg",
-    text: "Proiecte case parter",
-  },
-  {
-    image: "/plans.jpeg",
-    text: "Planuri case etaj",
-  },
-  {
-    image: "/icon.jpeg",
-    text: "Proiecte Case cu Mansarda",
-  },
+  { image: "/constructions.jpeg", text: "Proiecte Case Parter" },
+  { image: "/plans.jpeg", text: "Proiecte Case Etaj" },
+  { image: "/icon.jpeg", text: "Proiecte Case Mansarda" },
 ];
 
 const MainPage = () => {
+  const router = useRouter();
+
   return (
     <div className="min-h-screen bg-white">
       {/* Top band */}
       <div
-        className="w-full h-12 flex justify-between items-center px-6 text-sm text-white shadow-md"
+        className="w-full h-12 flex justify-end items-center px-6 text-sm text-white shadow-md"
         style={{ backgroundColor: "#3D3B3B" }}
       >
-        {/* Contact info */}
+        {/* Home + Login */}
+        <div className="flex items-center gap-4">
+          <button
+            onClick={() => router.push("/")} 
+            className="text-white font-semibold hover:text-gray-300 transition"
+          >
+            Home
+          </button>
+          <button className="text-white font-semibold hover:text-gray-300 transition">
+            Login
+          </button>
+        </div>
+      </div>
+
+      {/* Contact band (new top-right band) */}
+      <div
+        className="w-full h-10 flex justify-end items-center px-6 text-sm text-white shadow-md"
+        style={{ backgroundColor: "#3D3B3B" }}
+      >
         <div className="flex items-center gap-6">
           <div className="flex items-center gap-2">
             <Phone size={16} />
@@ -44,11 +53,6 @@ const MainPage = () => {
             <span>{CONTACT_EMAIL}</span>
           </div>
         </div>
-
-        {/* Login */}
-        <button className="text-white font-semibold hover:text-gray-300 transition">
-          Login
-        </button>
       </div>
 
       {/* Header */}
@@ -78,10 +82,11 @@ const MainPage = () => {
         {CARD_DATA.map((card, index) => (
           <div
             key={index}
-            className="max-w-sm w-full bg-[#3D3B3B] rounded-lg shadow-lg overflow-hidden text-center p-4 
-                       transform transition duration-300 hover:scale-105 hover:shadow-2xl"
+            className="max-w-sm w-full bg-[#3D3B3B] rounded-lg shadow-lg overflow-hidden text-center p-4 transform transition duration-300 hover:scale-105 hover:shadow-2xl"
           >
-            <div className="text-white text-xl font-semibold mb-3">{card.text}</div>
+            <div className="text-white text-xl font-semibold mb-3">
+              {card.text}
+            </div>
             <div className="overflow-hidden rounded-lg">
               <img
                 src={card.image}
