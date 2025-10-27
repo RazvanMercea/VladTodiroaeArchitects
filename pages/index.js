@@ -69,7 +69,7 @@ const MainPage = () => {
             alt="Logo"
             className="w-20 h-20 rounded-full mb-4 border-2 border-white object-cover shadow-md"
           />
-          <h1 className="text-white text-4xl md:text-5xl font-bold tracking-tight drop-shadow-lg">
+          <h1 className="text-white text-4xl md:text-5xl font-bold tracking-tight">
             Vlad Todiroaie Architects +
           </h1>
         </div>
