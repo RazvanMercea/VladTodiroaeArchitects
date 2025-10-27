@@ -38,7 +38,6 @@ const MainPage = () => {
         </div>
       </div>
 
-      {/* Main content */}
       <div className="flex-grow">
         {/* Header */}
         <div className="relative h-[350px] w-full shadow-lg">
