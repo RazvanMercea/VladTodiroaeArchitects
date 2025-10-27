@@ -6,6 +6,9 @@ import { Phone, Mail } from "lucide-react";
 const CONTACT_PHONE = process.env.NEXT_PUBLIC_CONTACT_PHONE;
 const CONTACT_EMAIL = process.env.NEXT_PUBLIC_CONTACT_EMAIL;
 
+console.log("Phone:", CONTACT_PHONE);
+console.log("Email:", CONTACT_EMAIL);
+
 // Card data
 const CARD_DATA = [
   {
