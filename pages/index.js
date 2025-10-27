@@ -1,16 +1,12 @@
-import { useEffect } from "react";
-import { db } from "@/lib/firebase";
-import React from "react";
-
 import React from "react";
 import { db } from "@/lib/firebase";
-import { Phone, Mail } from "lucide-react"; // ✅ beautiful icons
+import { Phone, Mail } from "lucide-react";
 
 // Contact info
 const CONTACT_PHONE = process.env.NEXT_PUBLIC_CONTACT_PHONE;
 const CONTACT_EMAIL = process.env.NEXT_PUBLIC_CONTACT_EMAIL;
 
-// Card data (clean constants)
+// Card data
 const CARD_DATA = [
   {
     image: "/constructions.jpeg",
@@ -59,7 +55,6 @@ const MainPage = () => {
           alt="Header Background"
           className="absolute inset-0 w-full h-full object-cover"
         />
-        {/* Soft gradient overlay for dynamism */}
         <div className="absolute inset-0 bg-gradient-to-b from-black/40 via-black/20 to-transparent"></div>
 
         {/* Content */}
@@ -69,7 +64,7 @@ const MainPage = () => {
             alt="Logo"
             className="w-20 h-20 rounded-full mb-4 border-2 border-white object-cover shadow-md"
           />
-          <h1 className="text-white text-4xl md:text-5xl font-bold tracking-tight">
+          <h1 className="text-white text-4xl md:text-5xl font-bold tracking-tight drop-shadow-lg">
             Vlad Todiroaie Architects +
           </h1>
         </div>
@@ -99,3 +94,4 @@ const MainPage = () => {
 };
 
 export default MainPage;
+
