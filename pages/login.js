@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import { Phone, Mail, Eye, EyeOff } from "lucide-react";
 import { useRouter } from "next/router";
 import { auth } from "@/lib/firebase";
-import { signInWithEmailAndPassword, signOut } from "firebase/auth";
+import { signInWithEmailAndPassword } from "firebase/auth";
 import toast from "react-hot-toast";
 
 // Contact info
@@ -28,13 +28,12 @@ const LoginPage = () => {
   // Login function
   const handleLogin = async () => {
     if (!email || !password) {
-      toast.error("Va rugam introduceti emailul si parola.");
+      toast.error("Vă rugăm introduceți emailul și parola.");
       return;
     }
 
     try {
       const userCredential = await signInWithEmailAndPassword(auth, email, password);
-
       const userData = {
         uid: userCredential.user.uid,
         email: userCredential.user.email,
@@ -42,29 +41,12 @@ const LoginPage = () => {
       localStorage.setItem("loggedUser", JSON.stringify(userData));
       setLoggedUser(userData);
 
-      toast.success("Login reusit!");
+      toast.success("Login reușit!");
       setError("");
       router.push("/"); // Redirect to main page
     } catch (err) {
-      console.error("Login nereusit:", err);
+      console.error("Login nereușit:", err);
       toast.error("Email-ul sau parola incorecte.");
-    }
-  };
-
-  // Logout function
-  const handleLogout = () => {
-    if (confirm("Sunteti sigur ca doriti sa va delogati?")) {
-      signOut(auth)
-        .then(() => {
-          localStorage.removeItem("loggedUser");
-          setLoggedUser(null);
-          toast.success("Logout efectuat cu succes!");
-          router.push("/login");
-        })
-        .catch((err) => {
-          console.error("Logout error:", err);
-          toast.error("A aparut o eroare la delogare.");
-        });
     }
   };
 
@@ -80,11 +62,13 @@ const LoginPage = () => {
         {/* Left side: user email */}
         <div className="flex items-center gap-2">
           {loggedUser && (
-            <span className="font-semibold text-white">Conectat ca: {loggedUser.email}</span>
+            <span className="font-semibold text-white">
+              Conectat ca: {loggedUser.email}
+            </span>
           )}
         </div>
 
-        {/* Right side: Home + Login/Logout */}
+        {/* Right side: Home + Login */}
         <div className="flex items-center gap-4">
           <button
             onClick={() => router.push("/")}
@@ -92,20 +76,12 @@ const LoginPage = () => {
           >
             Home
           </button>
-
-          {!loggedUser ? (
+          {!loggedUser && (
             <button
               onClick={() => router.push("/login")}
               className="text-white font-semibold hover:text-gray-300 transition"
             >
               Login
-            </button>
-          ) : (
-            <button
-              onClick={handleLogout}
-              className="text-white font-semibold hover:text-gray-300 transition"
-            >
-              Logout
             </button>
           )}
         </div>
@@ -120,7 +96,6 @@ const LoginPage = () => {
         />
         <div className="absolute inset-0 bg-gradient-to-b from-black/40 via-black/20 to-transparent"></div>
 
-        {/* Content */}
         <div className="absolute inset-0 flex flex-col items-center justify-center text-center px-4">
           <img
             src="/icon.jpeg"
@@ -147,7 +122,9 @@ const LoginPage = () => {
           )}
 
           <div className="mb-4">
-            <label className="block mb-1 font-semibold text-gray-700">Email</label>
+            <label className="block mb-1 font-semibold text-gray-700">
+              Email
+            </label>
             <input
               type="email"
               value={loggedUser ? loggedUser.email : email}
@@ -155,13 +132,15 @@ const LoginPage = () => {
               className={`w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-gray-400 ${
                 isDisabled ? "bg-gray-200 cursor-not-allowed opacity-50" : ""
               }`}
-              placeholder="Enter your email"
+              placeholder="Introduceți emailul"
               disabled={isDisabled}
             />
           </div>
 
           <div className="mb-6 relative">
-            <label className="block mb-1 font-semibold text-gray-700">Password</label>
+            <label className="block mb-1 font-semibold text-gray-700">
+              Parolă
+            </label>
             <input
               type={showPassword ? "text" : "password"}
               value={password}
@@ -169,7 +148,7 @@ const LoginPage = () => {
               className={`w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-gray-400 pr-10 ${
                 isDisabled ? "bg-gray-200 cursor-not-allowed opacity-50" : ""
               }`}
-              placeholder="Enter your password"
+              placeholder="Introduceți parola"
               disabled={isDisabled}
             />
             <button
@@ -185,18 +164,9 @@ const LoginPage = () => {
           {!loggedUser && (
             <button
               onClick={handleLogin}
-              className="w-full bg-[#3D3B3B] text-white font-semibold py-2 rounded-md hover:bg-gray-600 transition"
+              className="w-full bg-[#3D3B3B] text-white font-semibold py-2 rounded-md hover:bg-gray-700 transition"
             >
               Login
-            </button>
-          )}
-
-          {loggedUser && (
-            <button
-              onClick={handleLogout}
-              className="w-full mt-4 bg-red-600 text-white font-semibold py-2 rounded-md hover:bg-red-700 transition"
-            >
-              Logout
             </button>
           )}
         </div>
@@ -223,4 +193,3 @@ const LoginPage = () => {
 };
 
 export default LoginPage;
-

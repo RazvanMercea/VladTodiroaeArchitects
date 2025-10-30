@@ -1,13 +1,13 @@
 import React, { useState, useEffect } from "react";
-import { db } from "@/lib/firebase";
+import { db, auth } from "@/lib/firebase";
+import { signOut } from "firebase/auth";
 import { Phone, Mail } from "lucide-react";
 import { useRouter } from "next/router";
+import toast from "react-hot-toast";
 
-// Contact info
 const CONTACT_PHONE = process.env.NEXT_PUBLIC_CONTACT_PHONE;
 const CONTACT_EMAIL = process.env.NEXT_PUBLIC_CONTACT_EMAIL;
 
-// Card data
 const CARD_DATA = [
   { image: "/constructions.jpeg", text: "Proiecte Case Parter" },
   { image: "/plans.jpeg", text: "Proiecte Case Etaj" },
@@ -25,6 +25,41 @@ const MainPage = () => {
     }
   }, []);
 
+  // 🧠 New Logout logic
+  const handleLogout = () => {
+    toast(
+      (t) => (
+        <div className="text-center">
+          <p className="font-semibold mb-3">Sigur doriți să vă delogați?</p>
+          <div className="flex justify-center gap-3">
+            <button
+              onClick={() => {
+                signOut(auth)
+                  .then(() => {
+                    localStorage.removeItem("loggedUser");
+                    setLoggedUser(null);
+                    toast.dismiss(t.id);
+                    toast.success("V-ați delogat cu succes!");
+                  })
+                  .catch(() => toast.error("A apărut o eroare la delogare."));
+              }}
+              className="bg-red-600 hover:bg-red-700 text-white px-4 py-1 rounded-lg transition"
+            >
+              Da
+            </button>
+            <button
+              onClick={() => toast.dismiss(t.id)}
+              className="bg-gray-300 hover:bg-gray-400 text-black px-4 py-1 rounded-lg transition"
+            >
+              Nu
+            </button>
+          </div>
+        </div>
+      ),
+      { duration: 4000 }
+    );
+  };
+
   return (
     <div className="min-h-screen flex flex-col bg-white">
       {/* Top band */}
@@ -35,7 +70,9 @@ const MainPage = () => {
         {/* Left side: logged-in user email */}
         <div className="flex items-center gap-2">
           {loggedUser && (
-            <span className="font-semibold text-white">Conectat ca: {loggedUser.email}</span>
+            <span className="font-semibold text-white">
+              Conectat ca: {loggedUser.email}
+            </span>
           )}
         </div>
 
@@ -57,7 +94,7 @@ const MainPage = () => {
             </button>
           ) : (
             <button
-              onClick={() => router.push("/login")}
+              onClick={handleLogout}
               className="text-white font-semibold hover:text-gray-300 transition"
             >
               Logout
@@ -66,54 +103,51 @@ const MainPage = () => {
         </div>
       </div>
 
-      <div className="flex-grow">
-        {/* Header */}
-        <div className="relative h-[350px] w-full shadow-lg">
+      {/* Header */}
+      <div className="relative h-[350px] w-full shadow-lg">
+        <img
+          src="/header_image.jpeg"
+          alt="Header Background"
+          className="absolute inset-0 w-full h-full object-cover"
+        />
+        <div className="absolute inset-0 bg-gradient-to-b from-black/40 via-black/20 to-transparent"></div>
+
+        <div className="absolute inset-0 flex flex-col items-center justify-center text-center px-4">
           <img
-            src="/header_image.jpeg"
-            alt="Header Background"
-            className="absolute inset-0 w-full h-full object-cover"
+            src="/icon.jpeg"
+            alt="Logo"
+            className="w-20 h-20 rounded-full mb-4 border-2 border-white object-cover shadow-md"
           />
-          <div className="absolute inset-0 bg-gradient-to-b from-black/40 via-black/20 to-transparent"></div>
-
-          {/* Content */}
-          <div className="absolute inset-0 flex flex-col items-center justify-center text-center px-4">
-            <img
-              src="/icon.jpeg"
-              alt="Logo"
-              className="w-20 h-20 rounded-full mb-4 border-2 border-white object-cover shadow-md"
-            />
-            <h1 className="text-white text-4xl md:text-5xl font-bold tracking-tight drop-shadow-lg">
-              Vlad Todiroaie Architects +
-            </h1>
-          </div>
+          <h1 className="text-white text-4xl md:text-5xl font-bold tracking-tight drop-shadow-lg">
+            Vlad Todiroaie Architects +
+          </h1>
         </div>
+      </div>
 
-        {/* Cards */}
-        <div className="flex flex-wrap justify-center gap-6 mt-10 px-4">
-          {CARD_DATA.map((card, index) => (
-            <div
-              key={index}
-              className="max-w-sm w-full bg-[#3D3B3B] rounded-lg shadow-lg overflow-hidden text-center p-4 transform transition duration-300 hover:scale-105 hover:shadow-2xl"
-            >
-              <div className="text-white text-xl font-semibold mb-3">
-                {card.text}
-              </div>
-              <div className="overflow-hidden rounded-lg">
-                <img
-                  src={card.image}
-                  alt={card.text}
-                  className="w-full h-64 object-cover transition-transform duration-300 hover:scale-105"
-                />
-              </div>
+      {/* Cards */}
+      <div className="flex flex-wrap justify-center gap-6 mt-10 px-4">
+        {CARD_DATA.map((card, index) => (
+          <div
+            key={index}
+            className="max-w-sm w-full bg-[#3D3B3B] rounded-lg shadow-lg overflow-hidden text-center p-4 transform transition duration-300 hover:scale-105 hover:shadow-2xl"
+          >
+            <div className="text-white text-xl font-semibold mb-3">
+              {card.text}
             </div>
-          ))}
-        </div>
+            <div className="overflow-hidden rounded-lg">
+              <img
+                src={card.image}
+                alt={card.text}
+                className="w-full h-64 object-cover transition-transform duration-300 hover:scale-105"
+              />
+            </div>
+          </div>
+        ))}
       </div>
 
       {/* Bottom Band */}
       <div
-        className="w-full h-10 flex justify-end items-center px-6 text-sm text-white shadow-md"
+        className="w-full h-10 flex justify-end items-center px-6 text-sm text-white shadow-md mt-10"
         style={{ backgroundColor: "#3D3B3B" }}
       >
         <div className="flex items-center gap-6">
@@ -132,6 +166,3 @@ const MainPage = () => {
 };
 
 export default MainPage;
-
-
-
