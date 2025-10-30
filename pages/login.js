@@ -43,7 +43,7 @@ const LoginPage = () => {
 
       toast.success("Login reușit!");
       setError("");
-      router.push("/"); // Redirect to main page
+      router.push("/");
     } catch (err) {
       console.error("Login nereușit:", err);
       toast.error("Email-ul sau parola incorecte.");

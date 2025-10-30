@@ -25,7 +25,6 @@ const MainPage = () => {
     }
   }, []);
 
-  // 🧠 New Logout logic
   const handleLogout = () => {
     toast(
       (t) => (
