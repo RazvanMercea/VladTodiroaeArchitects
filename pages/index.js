@@ -112,17 +112,18 @@ const MainPage = () => {
         />
         <div className="absolute inset-0 bg-gradient-to-b from-black/40 via-black/20 to-transparent"></div>
 
-        <div className="absolute inset-0 flex flex-col items-center justify-center text-center px-4">
-          <img
-            src="/icon.jpeg"
-            alt="Logo"
-            className="w-20 h-20 rounded-full mb-4 border-2 border-white object-cover shadow-md"
-          />
-          <h1 className="text-white text-4xl md:text-5xl font-bold tracking-tight drop-shadow-lg">
-            Vlad Todiroaie Architects +
-          </h1>
+          {/* Content */}
+          <div className="absolute inset-0 flex flex-col items-center justify-center text-center px-4">
+            <img
+              src="/icon.jpeg"
+              alt="Logo"
+              className="w-20 h-20 rounded-full mb-4 border-2 border-white object-cover shadow-md"
+            />
+            <h1 className="text-white text-4xl md:text-5xl font-bold tracking-tight drop-shadow-lg">
+              Vlad Todiroae Architects +
+            </h1>
+          </div>
         </div>
-      </div>
 
       {/* Cards */}
       <div className="flex flex-wrap justify-center gap-6 mt-10 px-4">
