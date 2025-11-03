@@ -102,16 +102,17 @@ const MainPage = () => {
         </div>
       </div>
 
-      {/* Header */}
-      <div className="relative h-[350px] w-full shadow-lg">
-        <img
-          src="/header_image.jpeg"
-          alt="Header Background"
-          className="absolute inset-0 w-full h-full object-cover"
-        />
-        <div className="absolute inset-0 bg-gradient-to-b from-black/40 via-black/20 to-transparent"></div>
+      {/* Main content area (flex-grow ensures footer sticks to bottom) */}
+      <div className="flex-grow">
+        {/* Header */}
+        <div className="relative h-[350px] w-full shadow-lg">
+          <img
+            src="/header_image.jpeg"
+            alt="Header Background"
+            className="absolute inset-0 w-full h-full object-cover"
+          />
+          <div className="absolute inset-0 bg-gradient-to-b from-black/40 via-black/20 to-transparent"></div>
 
-          {/* Content */}
           <div className="absolute inset-0 flex flex-col items-center justify-center text-center px-4">
             <img
               src="/icon.jpeg"
@@ -124,30 +125,31 @@ const MainPage = () => {
           </div>
         </div>
 
-      {/* Cards */}
-      <div className="flex flex-wrap justify-center gap-6 mt-10 px-4">
-        {CARD_DATA.map((card, index) => (
-          <div
-            key={index}
-            className="max-w-sm w-full bg-[#3D3B3B] rounded-lg shadow-lg overflow-hidden text-center p-4 transform transition duration-300 hover:scale-105 hover:shadow-2xl"
-          >
-            <div className="text-white text-xl font-semibold mb-3">
-              {card.text}
+        {/* Cards */}
+        <div className="flex flex-wrap justify-center gap-6 mt-10 px-4 pb-10">
+          {CARD_DATA.map((card, index) => (
+            <div
+              key={index}
+              className="max-w-sm w-full bg-[#3D3B3B] rounded-lg shadow-lg overflow-hidden text-center p-4 transform transition duration-300 hover:scale-105 hover:shadow-2xl"
+            >
+              <div className="text-white text-xl font-semibold mb-3">
+                {card.text}
+              </div>
+              <div className="overflow-hidden rounded-lg">
+                <img
+                  src={card.image}
+                  alt={card.text}
+                  className="w-full h-64 object-cover transition-transform duration-300 hover:scale-105"
+                />
+              </div>
             </div>
-            <div className="overflow-hidden rounded-lg">
-              <img
-                src={card.image}
-                alt={card.text}
-                className="w-full h-64 object-cover transition-transform duration-300 hover:scale-105"
-              />
-            </div>
-          </div>
-        ))}
+          ))}
+        </div>
       </div>
 
       {/* Bottom Band */}
-      <div
-        className="w-full h-10 flex justify-end items-center px-6 text-sm text-white shadow-md mt-10"
+      <footer
+        className="w-full h-10 flex justify-end items-center px-6 text-sm text-white shadow-md"
         style={{ backgroundColor: "#3D3B3B" }}
       >
         <div className="flex items-center gap-6">
@@ -160,7 +162,7 @@ const MainPage = () => {
             <span>{CONTACT_EMAIL}</span>
           </div>
         </div>
-      </div>
+      </footer>
     </div>
   );
 };
