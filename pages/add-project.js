@@ -299,7 +299,7 @@ const AddProjectPage = () => {
         </div>
 
         {/* Compartimentare */}
-        <div className="p-6 bg-gray-200 rounded-lg shadow-md space-y-4">
+        <div className="p-6 bg-gray-100 rounded-lg shadow-md space-y-4">
           <h2 className="text-2xl font-semibold mb-2 text-gray-800">
             Compartimentare
           </h2>
@@ -314,9 +314,9 @@ const AddProjectPage = () => {
                     setFloors([...floors, { type: floorType, rooms: [] }]);
                 }
                 }}
-                className={`flex items-center gap-2 px-4 py-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500
+                className={`px-4 py-2 rounded-lg font-semibold focus:outline-none focus:ring-2 focus:ring-green-500
+                bg-green-600 text-white hover:bg-green-700
                 ${availableFloors.length === 0 ? "opacity-50 cursor-not-allowed" : ""}
-                text-white bg-green-600 font-semibold hover:bg-green-700
                 `}
                 disabled={availableFloors.length === 0}
             >
@@ -324,12 +324,12 @@ const AddProjectPage = () => {
                 + Adaugă Etaj
                 </option>
                 {availableFloors.map((f) => (
-                <option key={f} value={f} className="text-black">
+                <option key={f} value={f}>
                     {f}
                 </option>
                 ))}
             </select>
-           </div>
+          </div>
 
           {floors.map((floor, floorIndex) => (
             <div
