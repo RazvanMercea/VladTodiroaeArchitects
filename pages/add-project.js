@@ -10,7 +10,6 @@ const CONTACT_PHONE = process.env.NEXT_PUBLIC_CONTACT_PHONE;
 const CONTACT_EMAIL = process.env.NEXT_PUBLIC_CONTACT_EMAIL;
 const ADMIN_EMAIL = process.env.NEXT_PUBLIC_ADMIN_EMAIL;
 
-
 const AddProjectPage = () => {
   const router = useRouter();
   const [loggedUser, setLoggedUser] = useState(null);
@@ -92,26 +91,12 @@ const AddProjectPage = () => {
     setImages((prev) => prev.filter((_, i) => i !== index));
   };
 
-  // Compartimentare
-  const availableFloors = ["Parter", "Etaj", "Mansarda", "Subsol"].filter(
-    (f) => !floors.some((floor) => floor.type === f)
-  );
-
-  const addFloor = () => {
-    if (availableFloors.length === 0) {
-      toast.error("Nu mai există etaje disponibile.");
-      return;
-    }
-    const nextFloor = availableFloors[0];
-    setFloors([...floors, { type: nextFloor, rooms: [] }]);
-  };
-
+  // Compartimentare actions
   const removeFloor = (floorIndex) => {
     setFloors(floors.filter((_, i) => i !== floorIndex));
   };
 
   const addRoom = (floorIndex) => {
-    const floor = floors[floorIndex];
     setFloors(
       floors.map((f, i) =>
         i === floorIndex
@@ -145,6 +130,10 @@ const AddProjectPage = () => {
       )
     );
   };
+
+  const availableFloors = ["Parter", "Etaj 1", "Etaj 2", "Etaj 3", "Mansarda", "Subsol"].filter(
+    (f) => !floors.some((floor) => floor.type === f)
+  );
 
   return (
     <div className="min-h-screen flex flex-col bg-white">
@@ -314,16 +303,46 @@ const AddProjectPage = () => {
           <h2 className="text-2xl font-semibold mb-2 text-gray-800">
             Compartimentare
           </h2>
-          <button
-            onClick={addFloor}
-            className="flex items-center gap-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition"
-          >
-            <Plus size={16} />
-            Adaugă Etaj
-          </button>
+
+          {/* Floor selection */}
+          <div className="flex items-center gap-2">
+            <select
+              value=""
+              onChange={(e) => {
+                const floorType = e.target.value;
+                if (floorType) {
+                  setFloors([...floors, { type: floorType, rooms: [] }]);
+                }
+              }}
+              className="border border-gray-400 rounded-md px-3 py-1 focus:outline-none focus:ring-2 focus:ring-gray-500"
+            >
+              <option value="" disabled>
+                Selectează etaj
+              </option>
+              {availableFloors.map((f) => (
+                <option key={f} value={f}>
+                  {f}
+                </option>
+              ))}
+            </select>
+
+            <button
+              onClick={() => {}}
+              disabled={floors.length >= 6}
+              className={`flex items-center gap-2 px-3 py-1.5 bg-green-600 text-white rounded-lg hover:bg-green-700 transition ${
+                floors.length >= 6 ? "opacity-50 cursor-not-allowed" : ""
+              }`}
+            >
+              <Plus size={14} />
+              Adaugă Etaj
+            </button>
+          </div>
 
           {floors.map((floor, floorIndex) => (
-            <div key={floorIndex} className="border border-gray-400 p-4 rounded-md space-y-2 bg-gray-100 relative">
+            <div
+              key={floorIndex}
+              className="border border-gray-400 p-4 rounded-md space-y-2 bg-gray-100 relative"
+            >
               <div className="flex justify-between items-center mb-2">
                 <h3 className="font-semibold text-gray-800">{floor.type}</h3>
                 <button
@@ -340,7 +359,7 @@ const AddProjectPage = () => {
                   <tr>
                     <th className="border-b px-2 py-1 text-left">Camera</th>
                     <th className="border-b px-2 py-1 text-left">Suprafață (mp)</th>
-                    <th className="border-b px-2 py-1">Acțiuni</th>
+                    <th className="border-b px-2 py-1">&nbsp;</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -386,7 +405,7 @@ const AddProjectPage = () => {
 
               <button
                 onClick={() => addRoom(floorIndex)}
-                className="flex items-center gap-2 mt-2 px-3 py-1 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition"
+                className="flex items-center gap-2 mt-2 px-3 py-1.5 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition"
               >
                 <Plus size={14} />
                 Adaugă Cameră
