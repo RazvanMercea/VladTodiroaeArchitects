@@ -24,7 +24,6 @@ const AddProjectPage = () => {
   const [previewImage, setPreviewImage] = useState(null);
 
   const [floors, setFloors] = useState([]); // {type, rooms: [{roomType, mp}]}
-
   const [plans, setPlans] = useState({});
 
   useEffect(() => {
@@ -138,14 +137,17 @@ const AddProjectPage = () => {
     );
   };
 
-const removeFloor = (floorIndex) => {
-  const floor = floors[floorIndex];
-  if (floor.type === "Parter" && CATEGORY_FLOOR_RULES[projectCategory].defaultFloors.includes("Parter")) {
-    toast.error("Etajul 'Parter' nu poate fi șters.");
-    return;
-  }
-  setFloors(floors.filter((_, i) => i !== floorIndex));
-};
+  const removeFloor = (floorIndex) => {
+    const floor = floors[floorIndex];
+    if (
+      floor.type === "Parter" &&
+      CATEGORY_FLOOR_RULES[projectCategory].defaultFloors.includes("Parter")
+    ) {
+      toast.error("Etajul 'Parter' nu poate fi șters.");
+      return;
+    }
+    setFloors(floors.filter((_, i) => i !== floorIndex));
+  };
 
   const availableFloors = ALL_FLOORS.filter(
     (f) =>
@@ -237,7 +239,7 @@ const removeFloor = (floorIndex) => {
             <label className="block mb-1 font-semibold text-gray-700">
               Imagini Proiect
             </label>
-            <label className="inline-block mb-2 px-4 py-2 bg-blue-600 text-white rounded-lg cursor-pointer hover:bg-blue-700 transition">
+            <label className="inline-block mb-2 cursor-pointer text-blue-800 italic underline">
               Browse Images
               <input
                 type="file"
@@ -359,11 +361,15 @@ const removeFloor = (floorIndex) => {
                 <button
                   onClick={() => removeFloor(floorIndex)}
                   className={`text-red-600 hover:text-red-800 ${
-                    CATEGORY_FLOOR_RULES[projectCategory].defaultFloors.includes(floor.type)
+                    CATEGORY_FLOOR_RULES[projectCategory].defaultFloors.includes(
+                      floor.type
+                    )
                       ? "opacity-50 cursor-not-allowed"
                       : ""
                   }`}
-                  disabled={CATEGORY_FLOOR_RULES[projectCategory].defaultFloors.includes(floor.type)}
+                  disabled={CATEGORY_FLOOR_RULES[projectCategory].defaultFloors.includes(
+                    floor.type
+                  )}
                 >
                   <Trash2 size={16} />
                 </button>
@@ -429,71 +435,72 @@ const removeFloor = (floorIndex) => {
             </div>
           ))}
         </div>
+
         {/* Planuri */}
         <div className="p-6 bg-gray-100 rounded-lg shadow-md space-y-4">
-            <h2 className="text-2xl font-semibold mb-2 text-gray-800">Planuri</h2>
-            <p className="text-sm text-gray-600 mb-2">
-                Incarcati o singura imagine per etaj
-            </p>
+          <h2 className="text-2xl font-semibold mb-2 text-gray-800">Planuri</h2>
+          <p className="text-sm text-gray-600 mb-2">
+            Incarcati o singura imagine per etaj
+          </p>
 
-            {floors.map((floor, floorIndex) => (
-                <div
-                key={floorIndex}
-                className="border border-gray-400 p-4 rounded-md space-y-2 bg-gray-100 relative"
-                >
-                <div className="flex items-center gap-4">
-                    <span className="font-semibold text-gray-800">Plan - {floor.type}:</span>
+          {floors.map((floor, floorIndex) => (
+            <div
+              key={floorIndex}
+              className="border border-gray-400 p-4 rounded-md space-y-2 bg-gray-100 relative"
+            >
+              <div className="flex items-center gap-4">
+                <span className="font-semibold text-gray-800">Plan - {floor.type}:</span>
 
-                    <label className="inline-block px-4 py-2 bg-green-600 text-white rounded-lg cursor-pointer hover:bg-green-700 transition">
-                    Upload
-                    <input
-                        type="file"
-                        accept="image/*"
-                        onChange={(e) => {
-                        if (!e.target.files.length) return;
+                <label className="inline-block px-0 py-0 cursor-pointer text-blue-800 italic underline">
+                  Upload Plan
+                  <input
+                    type="file"
+                    accept="image/*"
+                    onChange={(e) => {
+                      if (!e.target.files.length) return;
 
-                        if (plans[floor.type]) {
-                            toast.error("Poti incarca doar o imagine per etaj.");
-                            return;
-                        }
+                      if (plans[floor.type]) {
+                        toast.error("Poti incarca doar o imagine per etaj.");
+                        return;
+                      }
 
-                        const file = e.target.files[0];
-                        setPlans((prev) => ({
-                            ...prev,
-                            [floor.type]: { file, url: URL.createObjectURL(file) },
-                        }));
-                        e.target.value = "";
-                        }}
-                        className="hidden"
+                      const file = e.target.files[0];
+                      setPlans((prev) => ({
+                        ...prev,
+                        [floor.type]: { file, url: URL.createObjectURL(file) },
+                      }));
+                      e.target.value = "";
+                    }}
+                    className="hidden"
+                  />
+                </label>
+
+                {plans[floor.type] && (
+                  <div className="relative w-32 h-32 border border-gray-400 rounded-md overflow-hidden cursor-pointer">
+                    <img
+                      src={plans[floor.type].url}
+                      alt="Plan preview"
+                      className="w-full h-full object-cover"
+                      onClick={() => setPreviewImage(plans[floor.type].url)}
                     />
-                    </label>
-
-                    {plans[floor.type] && (
-                    <div className="relative w-32 h-32 border border-gray-400 rounded-md overflow-hidden cursor-pointer">
-                        <img
-                        src={plans[floor.type].url}
-                        alt="Plan preview"
-                        className="w-full h-full object-cover"
-                        onClick={() => setPreviewImage(plans[floor.type].url)}
-                        />
-                        <button
-                        onClick={() =>
-                            setPlans((prev) => {
-                            const newPlans = { ...prev };
-                            delete newPlans[floor.type];
-                            return newPlans;
-                            })
-                        }
-                        className="absolute top-1 right-1 bg-red-500 rounded-full p-1 text-white"
-                        >
-                        <X size={16} />
-                        </button>
-                    </div>
-                    )}
-                </div>
-                </div>
-            ))}
+                    <button
+                      onClick={() =>
+                        setPlans((prev) => {
+                          const newPlans = { ...prev };
+                          delete newPlans[floor.type];
+                          return newPlans;
+                        })
+                      }
+                      className="absolute top-1 right-1 bg-red-500 rounded-full p-1 text-white"
+                    >
+                      <X size={16} />
+                    </button>
+                  </div>
+                )}
+              </div>
             </div>
+          ))}
+        </div>
       </div>
 
       {/* Image Preview Popup */}
