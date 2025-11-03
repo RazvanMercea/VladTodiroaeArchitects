@@ -429,6 +429,71 @@ const removeFloor = (floorIndex) => {
             </div>
           ))}
         </div>
+        {/* Planuri */}
+        <div className="p-6 bg-gray-100 rounded-lg shadow-md space-y-4">
+            <h2 className="text-2xl font-semibold mb-2 text-gray-800">Planuri</h2>
+            <p className="text-sm text-gray-600 mb-2">
+                Incarcati o singura imagine per etaj
+            </p>
+
+            {floors.map((floor, floorIndex) => (
+                <div
+                key={floorIndex}
+                className="border border-gray-400 p-4 rounded-md space-y-2 bg-gray-100 relative"
+                >
+                <div className="flex items-center gap-4">
+                    <span className="font-semibold text-gray-800">Plan - {floor.type}:</span>
+
+                    <label className="inline-block px-4 py-2 bg-green-600 text-white rounded-lg cursor-pointer hover:bg-green-700 transition">
+                    Upload
+                    <input
+                        type="file"
+                        accept="image/*"
+                        onChange={(e) => {
+                        if (!e.target.files.length) return;
+
+                        if (plans[floor.type]) {
+                            toast.error("Poti incarca doar o imagine per etaj.");
+                            return;
+                        }
+
+                        const file = e.target.files[0];
+                        setPlans((prev) => ({
+                            ...prev,
+                            [floor.type]: { file, url: URL.createObjectURL(file) },
+                        }));
+                        e.target.value = "";
+                        }}
+                        className="hidden"
+                    />
+                    </label>
+
+                    {plans[floor.type] && (
+                    <div className="relative w-32 h-32 border border-gray-400 rounded-md overflow-hidden cursor-pointer">
+                        <img
+                        src={plans[floor.type].url}
+                        alt="Plan preview"
+                        className="w-full h-full object-cover"
+                        onClick={() => setPreviewImage(plans[floor.type].url)}
+                        />
+                        <button
+                        onClick={() =>
+                            setPlans((prev) => {
+                            const newPlans = { ...prev };
+                            delete newPlans[floor.type];
+                            return newPlans;
+                            })
+                        }
+                        className="absolute top-1 right-1 bg-red-500 rounded-full p-1 text-white"
+                        >
+                        <X size={16} />
+                        </button>
+                    </div>
+                    )}
+                </div>
+                </div>
+            ))}
+            </div>
       </div>
 
       {/* Image Preview Popup */}
