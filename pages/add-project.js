@@ -237,7 +237,7 @@ const removeFloor = (floorIndex) => {
             <label className="block mb-1 font-semibold text-gray-700">
               Imagini Proiect
             </label>
-            <label className="inline-block mb-2 px-4 py-2 bg-blue-600 text-white rounded-lg cursor-pointer hover:bg-blue-700 transition">
+            <label className="italic underline text-blue-800 cursor-pointer hover:text-blue-600 transition">
               Browse Images
               <input
                 type="file"
@@ -444,7 +444,7 @@ const removeFloor = (floorIndex) => {
                 <div className="flex items-center gap-4">
                     <span className="font-semibold text-gray-800">Plan - {floor.type}:</span>
 
-                    <label className="inline-block px-4 py-2 bg-green-600 text-white rounded-lg cursor-pointer hover:bg-green-700 transition">
+                    <label className="italic underline text-blue-800 cursor-pointer hover:text-blue-600 transition">
                     Upload
                     <input
                         type="file"
@@ -494,7 +494,23 @@ const removeFloor = (floorIndex) => {
                 </div>
             ))}
             </div>
-      </div>
+
+        {/* Bottom buttons */}
+            <div className="flex justify-center gap-6 mt-10">
+            <button
+                onClick={handleCancel}
+                className="bg-[#3D3B3B] hover:bg-gray-700 text-white font-semibold px-6 py-3 rounded-lg shadow-md transition transform hover:scale-105"
+            >
+                Anulați
+            </button>
+            <button
+                onClick={handleAddProject}
+                className="bg-[#3D3B3B] hover:bg-gray-700 text-white font-semibold px-6 py-3 rounded-lg shadow-md transition transform hover:scale-105"
+            >
+                Adaugă Proiect
+            </button>
+            </div>
+        </div>
 
       {/* Image Preview Popup */}
       {previewImage && (
