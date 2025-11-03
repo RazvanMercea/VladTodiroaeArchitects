@@ -7,6 +7,7 @@ import toast from "react-hot-toast";
 
 const CONTACT_PHONE = process.env.NEXT_PUBLIC_CONTACT_PHONE;
 const CONTACT_EMAIL = process.env.NEXT_PUBLIC_CONTACT_EMAIL;
+const ADMIN_EMAIL = process.env.NEXT_PUBLIC_ADMIN_EMAIL;
 
 const CARD_DATA = [
   { image: "/constructions.jpeg", text: "Proiecte Case Parter" },
@@ -145,6 +146,18 @@ const MainPage = () => {
             </div>
           ))}
         </div>
+        
+        {/* Admin-only button */}
+        {loggedUser?.email === ADMIN_EMAIL && (
+          <div className="flex justify-center mb-10">
+            <button
+              onClick={() => router.push("/add-project")}
+              className="bg-[#3D3B3B] hover:bg-gray-700 text-white font-semibold px-6 py-3 rounded-lg shadow-md transition transform hover:scale-105"
+            >
+            Adăugați Proiecte
+            </button>
+          </div>
+        )}
       </div>
 
       {/* Bottom Band */}
