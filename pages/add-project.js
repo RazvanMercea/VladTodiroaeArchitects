@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { db, auth } from "@/lib/firebase";
-import { signOut } from "firebase/auth";ok
+import { signOut } from "firebase/auth";
 import { Phone, Mail, X, Plus, Trash2 } from "lucide-react";
 import { useRouter } from "next/router";
 import toast from "react-hot-toast";
@@ -237,7 +237,7 @@ const removeFloor = (floorIndex) => {
             <label className="block mb-1 font-semibold text-gray-700">
               Imagini Proiect
             </label>
-            <label className="italic underline text-blue-800 cursor-pointer hover:text-blue-600 transition">
+            <label className="inline-block mb-2 px-4 py-2 bg-blue-600 text-white rounded-lg cursor-pointer hover:bg-blue-700 transition">
               Browse Images
               <input
                 type="file"
@@ -444,8 +444,8 @@ const removeFloor = (floorIndex) => {
                 <div className="flex items-center gap-4">
                     <span className="font-semibold text-gray-800">Plan - {floor.type}:</span>
 
-                    <label className="italic underline text-blue-800 cursor-pointer hover:text-blue-600 transition">
-                    Upload PLan
+                    <label className="inline-block px-4 py-2 bg-green-600 text-white rounded-lg cursor-pointer hover:bg-green-700 transition">
+                    Upload
                     <input
                         type="file"
                         accept="image/*"
