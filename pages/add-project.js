@@ -314,28 +314,20 @@ const AddProjectPage = () => {
                   setFloors([...floors, { type: floorType, rooms: [] }]);
                 }
               }}
-              className="border border-gray-400 rounded-md px-3 py-1 focus:outline-none focus:ring-2 focus:ring-gray-500"
+              className={`flex items-center gap-2 px-4 py-2 bg-green-600 text-white font-semibold rounded-lg hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 ${
+                availableFloors.length === 0 ? "opacity-50 cursor-not-allowed" : ""
+              }`}
+              disabled={availableFloors.length === 0}
             >
               <option value="" disabled>
-                Selectează etaj
+                + Adaugă Etaj
               </option>
               {availableFloors.map((f) => (
-                <option key={f} value={f}>
+                <option key={f} value={f} className="text-black">
                   {f}
                 </option>
               ))}
             </select>
-
-            <button
-              onClick={() => {}}
-              disabled={floors.length >= 6}
-              className={`flex items-center gap-2 px-3 py-1.5 bg-green-600 text-white rounded-lg hover:bg-green-700 transition ${
-                floors.length >= 6 ? "opacity-50 cursor-not-allowed" : ""
-              }`}
-            >
-              <Plus size={14} />
-              Adaugă Etaj
-            </button>
           </div>
 
           {floors.map((floor, floorIndex) => (
