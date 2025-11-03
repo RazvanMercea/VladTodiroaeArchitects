@@ -5,6 +5,7 @@ import { Phone, Mail, X, Plus, Trash2 } from "lucide-react";
 import { useRouter } from "next/router";
 import toast from "react-hot-toast";
 import { CATEGORIES, ROOM_TYPES } from "@/lib/constants";
+import { CATEGORY_FLOOR_RULES, ALL_FLOORS } from "@/lib/helpers";
 
 const CONTACT_PHONE = process.env.NEXT_PUBLIC_CONTACT_PHONE;
 const CONTACT_EMAIL = process.env.NEXT_PUBLIC_CONTACT_EMAIL;
@@ -22,16 +23,26 @@ const AddProjectPage = () => {
   const [images, setImages] = useState([]);
   const [previewImage, setPreviewImage] = useState(null);
 
-  // Compartimentare state
-  const [floors, setFloors] = useState([]); // each floor {type: string, rooms: [{roomType, mp}]}
+  const [floors, setFloors] = useState([]); // {type, rooms: [{roomType, mp}]}
 
-  // Plans state
-  const [plans, setPlans] = useState({}); // {parter: image, etaj: image, mansarda: image, subsol: image}
+  const [plans, setPlans] = useState({});
 
   useEffect(() => {
     const storedUser = localStorage.getItem("loggedUser");
     if (storedUser) setLoggedUser(JSON.parse(storedUser));
   }, []);
+
+  useEffect(() => {
+    const rule = CATEGORY_FLOOR_RULES[projectCategory];
+
+    setFloors((prev) => {
+      const newFloors = rule.defaultFloors.map((floor) => {
+        const existing = prev.find((f) => f.type === floor);
+        return existing || { type: floor, rooms: [] };
+      });
+      return newFloors;
+    });
+  }, [projectCategory]);
 
   const handleLogout = () => {
     toast(
@@ -92,10 +103,6 @@ const AddProjectPage = () => {
   };
 
   // Compartimentare actions
-  const removeFloor = (floorIndex) => {
-    setFloors(floors.filter((_, i) => i !== floorIndex));
-  };
-
   const addRoom = (floorIndex) => {
     setFloors(
       floors.map((f, i) =>
@@ -131,8 +138,19 @@ const AddProjectPage = () => {
     );
   };
 
-  const availableFloors = ["Parter", "Etaj 1", "Etaj 2", "Etaj 3", "Mansarda", "Subsol"].filter(
-    (f) => !floors.some((floor) => floor.type === f)
+const removeFloor = (floorIndex) => {
+  const floor = floors[floorIndex];
+  if (floor.type === "Parter" && CATEGORY_FLOOR_RULES[projectCategory].defaultFloors.includes("Parter")) {
+    toast.error("Etajul 'Parter' nu poate fi șters.");
+    return;
+  }
+  setFloors(floors.filter((_, i) => i !== floorIndex));
+};
+
+  const availableFloors = ALL_FLOORS.filter(
+    (f) =>
+      !floors.some((floor) => floor.type === f) &&
+      !CATEGORY_FLOOR_RULES[projectCategory].disabledOptions.includes(f)
   );
 
   return (
@@ -307,27 +325,27 @@ const AddProjectPage = () => {
           {/* Floor selection */}
           <div className="flex items-center gap-2">
             <select
-                value=""
-                onChange={(e) => {
+              value=""
+              onChange={(e) => {
                 const floorType = e.target.value;
                 if (floorType) {
-                    setFloors([...floors, { type: floorType, rooms: [] }]);
+                  setFloors([...floors, { type: floorType, rooms: [] }]);
                 }
-                }}
-                className={`px-4 py-2 rounded-lg font-semibold focus:outline-none focus:ring-2 focus:ring-green-500
+              }}
+              className={`px-4 py-2 rounded-lg font-semibold focus:outline-none focus:ring-2 focus:ring-green-500
                 bg-green-600 text-white hover:bg-green-700
                 ${availableFloors.length === 0 ? "opacity-50 cursor-not-allowed" : ""}
-                `}
-                disabled={availableFloors.length === 0}
+              `}
+              disabled={availableFloors.length === 0}
             >
-                <option value="" disabled>
+              <option value="" disabled>
                 + Adaugă Etaj
-                </option>
-                {availableFloors.map((f) => (
+              </option>
+              {availableFloors.map((f) => (
                 <option key={f} value={f}>
-                    {f}
+                  {f}
                 </option>
-                ))}
+              ))}
             </select>
           </div>
 
@@ -340,7 +358,12 @@ const AddProjectPage = () => {
                 <h3 className="font-semibold text-gray-800">{floor.type}</h3>
                 <button
                   onClick={() => removeFloor(floorIndex)}
-                  className="text-red-600 hover:text-red-800"
+                  className={`text-red-600 hover:text-red-800 ${
+                    CATEGORY_FLOOR_RULES[projectCategory].defaultFloors.includes(floor.type)
+                      ? "opacity-50 cursor-not-allowed"
+                      : ""
+                  }`}
+                  disabled={CATEGORY_FLOOR_RULES[projectCategory].defaultFloors.includes(floor.type)}
                 >
                   <Trash2 size={16} />
                 </button>
