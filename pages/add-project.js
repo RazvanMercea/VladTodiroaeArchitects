@@ -1,32 +1,33 @@
 import React, { useState, useEffect } from "react";
 import { db, auth } from "@/lib/firebase";
 import { signOut } from "firebase/auth";
-import { Phone, Mail, X } from "lucide-react";
+import { Phone, Mail, X, Plus, Trash2 } from "lucide-react";
 import { useRouter } from "next/router";
 import toast from "react-hot-toast";
+import { CATEGORIES, ROOM_TYPES } from "@/lib/constants";
 
 const CONTACT_PHONE = process.env.NEXT_PUBLIC_CONTACT_PHONE;
 const CONTACT_EMAIL = process.env.NEXT_PUBLIC_CONTACT_EMAIL;
 const ADMIN_EMAIL = process.env.NEXT_PUBLIC_ADMIN_EMAIL;
 
-const CATEGORIES = [
-  "Proiecte Case Parter",
-  "Proiecte Case Etaj",
-  "Proiecte Case Mansarda",
-];
 
 const AddProjectPage = () => {
   const router = useRouter();
   const [loggedUser, setLoggedUser] = useState(null);
 
-  // Project form states
   const [projectName, setProjectName] = useState("");
   const [projectCategory, setProjectCategory] = useState(CATEGORIES[0]);
   const [projectPrice, setProjectPrice] = useState("");
   const [totalMP, setTotalMP] = useState("");
   const [usableMP, setUsableMP] = useState("");
   const [images, setImages] = useState([]);
-  const [previewImage, setPreviewImage] = useState(null); // For image popup
+  const [previewImage, setPreviewImage] = useState(null);
+
+  // Compartimentare state
+  const [floors, setFloors] = useState([]); // each floor {type: string, rooms: [{roomType, mp}]}
+
+  // Plans state
+  const [plans, setPlans] = useState({}); // {parter: image, etaj: image, mansarda: image, subsol: image}
 
   useEffect(() => {
     const storedUser = localStorage.getItem("loggedUser");
@@ -70,6 +71,7 @@ const AddProjectPage = () => {
     );
   };
 
+  // Images
   const handleImageUpload = (e) => {
     const files = Array.from(e.target.files);
     let newFiles = [];
@@ -83,11 +85,65 @@ const AddProjectPage = () => {
     });
 
     if (newFiles.length) setImages((prev) => [...prev, ...newFiles]);
-    e.target.value = ""; // allow re-upload after deletion
+    e.target.value = "";
   };
 
   const removeImage = (index) => {
     setImages((prev) => prev.filter((_, i) => i !== index));
+  };
+
+  // Compartimentare
+  const availableFloors = ["Parter", "Etaj", "Mansarda", "Subsol"].filter(
+    (f) => !floors.some((floor) => floor.type === f)
+  );
+
+  const addFloor = () => {
+    if (availableFloors.length === 0) {
+      toast.error("Nu mai există etaje disponibile.");
+      return;
+    }
+    const nextFloor = availableFloors[0];
+    setFloors([...floors, { type: nextFloor, rooms: [] }]);
+  };
+
+  const removeFloor = (floorIndex) => {
+    setFloors(floors.filter((_, i) => i !== floorIndex));
+  };
+
+  const addRoom = (floorIndex) => {
+    const floor = floors[floorIndex];
+    setFloors(
+      floors.map((f, i) =>
+        i === floorIndex
+          ? { ...f, rooms: [...f.rooms, { roomType: ROOM_TYPES[0], mp: "" }] }
+          : f
+      )
+    );
+  };
+
+  const removeRoom = (floorIndex, roomIndex) => {
+    setFloors(
+      floors.map((f, i) =>
+        i === floorIndex
+          ? { ...f, rooms: f.rooms.filter((_, idx) => idx !== roomIndex) }
+          : f
+      )
+    );
+  };
+
+  const updateRoom = (floorIndex, roomIndex, field, value) => {
+    setFloors(
+      floors.map((f, i) =>
+        i === floorIndex
+          ? {
+              ...f,
+              rooms: f.rooms.map((r, idx) =>
+                idx === roomIndex ? { ...r, [field]: value } : r
+              ),
+            }
+          : f
+      )
+    );
   };
 
   return (
@@ -134,29 +190,32 @@ const AddProjectPage = () => {
       <div className="flex-grow px-6 py-8 space-y-10">
         {/* Project Title */}
         <div>
-            <h2 className="text-2xl font-semibold mb-4">Numele Proiectului</h2>
-            <input
-                type="text"
-                value={projectName}
-                onChange={(e) => setProjectName(e.target.value)}
-                placeholder="Introduceți numele proiectului"
-                className="w-full border border-gray-300 rounded-md px-4 py-2 focus:outline-none focus:ring-2 focus:ring-gray-400"
-            />
+          <h2 className="text-2xl font-semibold mb-4 text-gray-800">
+            Numele Proiectului
+          </h2>
+          <input
+            type="text"
+            value={projectName}
+            onChange={(e) => setProjectName(e.target.value)}
+            placeholder="Introduceți numele proiectului"
+            className="w-full border border-gray-400 bg-gray-100 text-gray-800 rounded-md px-4 py-2 focus:outline-none focus:ring-2 focus:ring-gray-500"
+          />
         </div>
 
         {/* Informatii generale */}
-        <div className="p-6 bg-gray-50 rounded-lg shadow-md space-y-4">
-          <h2 className="text-2xl font-semibold mb-2">Informatii generale</h2>
-
+        <div className="p-6 bg-gray-100 rounded-lg shadow-md space-y-4">
+          <h2 className="text-2xl font-semibold mb-2 text-gray-800">
+            Informatii generale
+          </h2>
           {/* Categoria */}
           <div>
-            <label className="block mb-1 font-semibold">
+            <label className="block mb-1 font-semibold text-gray-700">
               Categoria Proiectului
             </label>
             <select
               value={projectCategory}
               onChange={(e) => setProjectCategory(e.target.value)}
-              className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-gray-400"
+              className="w-full border border-gray-400 bg-white text-gray-800 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-gray-500"
             >
               {CATEGORIES.map((cat, i) => (
                 <option key={i} value={cat}>
@@ -168,7 +227,9 @@ const AddProjectPage = () => {
 
           {/* Images */}
           <div>
-            <label className="block mb-1 font-semibold">Imagini Proiect</label>
+            <label className="block mb-1 font-semibold text-gray-700">
+              Imagini Proiect
+            </label>
             <label className="inline-block mb-2 px-4 py-2 bg-blue-600 text-white rounded-lg cursor-pointer hover:bg-blue-700 transition">
               Browse Images
               <input
@@ -179,7 +240,7 @@ const AddProjectPage = () => {
                 className="hidden"
               />
             </label>
-            <span className="ml-4 font-medium">
+            <span className="ml-4 font-medium text-gray-700">
               {images.length} image{images.length !== 1 ? "s" : ""} selected
             </span>
 
@@ -187,7 +248,7 @@ const AddProjectPage = () => {
               {images.map((img, idx) => (
                 <div
                   key={idx}
-                  className="relative w-32 h-32 flex-shrink-0 border rounded-md overflow-hidden cursor-pointer"
+                  className="relative w-32 h-32 flex-shrink-0 border border-gray-400 rounded-md overflow-hidden cursor-pointer"
                 >
                   <img
                     src={img.url}
@@ -208,54 +269,146 @@ const AddProjectPage = () => {
 
           {/* Price */}
           <div>
-            <label className="block mb-1 font-semibold">Pret Proiect (€)</label>
+            <label className="block mb-1 font-semibold text-gray-700">
+              Pret Proiect (€)
+            </label>
             <input
               type="number"
               value={projectPrice}
               onChange={(e) => setProjectPrice(e.target.value)}
-              className="w-full border border-gray-300 rounded-md px-4 py-2 focus:outline-none focus:ring-2 focus:ring-gray-400"
+              className="w-full border border-gray-400 bg-gray-100 text-gray-800 rounded-md px-4 py-2 focus:outline-none focus:ring-2 focus:ring-gray-500"
             />
           </div>
 
           {/* Total MP */}
           <div>
-            <label className="block mb-1 font-semibold">Metri pătrați totali</label>
+            <label className="block mb-1 font-semibold text-gray-700">
+              Metri pătrați totali
+            </label>
             <input
               type="number"
               step="0.1"
               value={totalMP}
               onChange={(e) => setTotalMP(e.target.value)}
-              className="w-full border border-gray-300 rounded-md px-4 py-2 focus:outline-none focus:ring-2 focus:ring-gray-400"
+              className="w-full border border-gray-400 bg-gray-100 text-gray-800 rounded-md px-4 py-2 focus:outline-none focus:ring-2 focus:ring-gray-500"
             />
           </div>
 
           {/* Usable MP */}
           <div>
-            <label className="block mb-1 font-semibold">Metri pătrați utili</label>
+            <label className="block mb-1 font-semibold text-gray-700">
+              Metri pătrați utili
+            </label>
             <input
               type="number"
               step="0.1"
               value={usableMP}
               onChange={(e) => setUsableMP(e.target.value)}
-              className="w-full border border-gray-300 rounded-md px-4 py-2 focus:outline-none focus:ring-2 focus:ring-gray-400"
+              className="w-full border border-gray-400 bg-gray-100 text-gray-800 rounded-md px-4 py-2 focus:outline-none focus:ring-2 focus:ring-gray-500"
             />
           </div>
         </div>
 
-        {/* Image Preview Popup */}
-        {previewImage && (
-          <div
-            className="fixed inset-0 bg-black/70 flex items-center justify-center z-50"
-            onClick={() => setPreviewImage(null)}
+        {/* Compartimentare */}
+        <div className="p-6 bg-gray-200 rounded-lg shadow-md space-y-4">
+          <h2 className="text-2xl font-semibold mb-2 text-gray-800">
+            Compartimentare
+          </h2>
+          <button
+            onClick={addFloor}
+            className="flex items-center gap-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition"
           >
-            <img
-              src={previewImage}
-              alt="Preview"
-              className="max-h-[90%] max-w-[90%] rounded-lg shadow-lg"
-            />
-          </div>
-        )}
+            <Plus size={16} />
+            Adaugă Etaj
+          </button>
+
+          {floors.map((floor, floorIndex) => (
+            <div key={floorIndex} className="border border-gray-400 p-4 rounded-md space-y-2 bg-gray-100 relative">
+              <div className="flex justify-between items-center mb-2">
+                <h3 className="font-semibold text-gray-800">{floor.type}</h3>
+                <button
+                  onClick={() => removeFloor(floorIndex)}
+                  className="text-red-600 hover:text-red-800"
+                >
+                  <Trash2 size={16} />
+                </button>
+              </div>
+
+              {/* Rooms Table */}
+              <table className="w-full text-gray-800">
+                <thead>
+                  <tr>
+                    <th className="border-b px-2 py-1 text-left">Camera</th>
+                    <th className="border-b px-2 py-1 text-left">Suprafață (mp)</th>
+                    <th className="border-b px-2 py-1">Acțiuni</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {floor.rooms.map((room, roomIndex) => (
+                    <tr key={roomIndex}>
+                      <td className="border-b px-2 py-1">
+                        <select
+                          value={room.roomType}
+                          onChange={(e) =>
+                            updateRoom(floorIndex, roomIndex, "roomType", e.target.value)
+                          }
+                          className="w-full border border-gray-400 rounded-md px-2 py-1"
+                        >
+                          {ROOM_TYPES.map((type) => (
+                            <option key={type} value={type}>
+                              {type}
+                            </option>
+                          ))}
+                        </select>
+                      </td>
+                      <td className="border-b px-2 py-1">
+                        <input
+                          type="number"
+                          value={room.mp}
+                          onChange={(e) =>
+                            updateRoom(floorIndex, roomIndex, "mp", e.target.value)
+                          }
+                          className="w-full border border-gray-400 rounded-md px-2 py-1"
+                        />
+                      </td>
+                      <td className="border-b px-2 py-1 text-center">
+                        <button
+                          onClick={() => removeRoom(floorIndex, roomIndex)}
+                          className="text-red-600 hover:text-red-800"
+                        >
+                          <X size={16} />
+                        </button>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+
+              <button
+                onClick={() => addRoom(floorIndex)}
+                className="flex items-center gap-2 mt-2 px-3 py-1 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition"
+              >
+                <Plus size={14} />
+                Adaugă Cameră
+              </button>
+            </div>
+          ))}
+        </div>
       </div>
+
+      {/* Image Preview Popup */}
+      {previewImage && (
+        <div
+          className="fixed inset-0 bg-black/70 flex items-center justify-center z-50"
+          onClick={() => setPreviewImage(null)}
+        >
+          <img
+            src={previewImage}
+            alt="Preview"
+            className="max-h-[90%] max-w-[90%] rounded-lg shadow-lg"
+          />
+        </div>
+      )}
 
       {/* Bottom Band */}
       <footer
