@@ -319,11 +319,11 @@ const AddProjectPage = () => {
               }`}
               disabled={availableFloors.length === 0}
             >
-              <option value="" disabled>
+              <option value="" disabled className="bg-green-600 text-white">
                 + Adaugă Etaj
               </option>
               {availableFloors.map((f) => (
-                <option key={f} value={f} className="text-black">
+                <option key={f} value={f}>
                   {f}
                 </option>
               ))}
