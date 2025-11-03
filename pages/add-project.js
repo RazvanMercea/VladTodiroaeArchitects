@@ -26,6 +26,7 @@ const AddProjectPage = () => {
   const [totalMP, setTotalMP] = useState("");
   const [usableMP, setUsableMP] = useState("");
   const [images, setImages] = useState([]);
+  const [previewImage, setPreviewImage] = useState(null); // For image popup
 
   useEffect(() => {
     const storedUser = localStorage.getItem("loggedUser");
@@ -48,7 +49,9 @@ const AddProjectPage = () => {
                     toast.success("V-ați delogat cu succes!");
                     router.push("/");
                   })
-                  .catch(() => toast.error("A apărut o eroare la delogare."));
+                  .catch(() =>
+                    toast.error("A apărut o eroare la delogare.")
+                  );
               }}
               className="bg-red-600 hover:bg-red-700 text-white px-4 py-1 rounded-lg transition"
             >
@@ -69,11 +72,18 @@ const AddProjectPage = () => {
 
   const handleImageUpload = (e) => {
     const files = Array.from(e.target.files);
-    const newImages = files.map((file) => ({
-      file,
-      url: URL.createObjectURL(file),
-    }));
-    setImages((prev) => [...prev, ...newImages]);
+    let newFiles = [];
+
+    files.forEach((file) => {
+      if (images.some((img) => img.file.name === file.name)) {
+        toast.error(`Imaginea "${file.name}" a fost deja adăugată.`);
+      } else {
+        newFiles.push({ file, url: URL.createObjectURL(file) });
+      }
+    });
+
+    if (newFiles.length) setImages((prev) => [...prev, ...newFiles]);
+    e.target.value = ""; // allow re-upload after deletion
   };
 
   const removeImage = (index) => {
@@ -124,14 +134,14 @@ const AddProjectPage = () => {
       <div className="flex-grow px-6 py-8 space-y-10">
         {/* Project Title */}
         <div>
-          <h1 className="text-3xl font-bold mb-4">Numele Proiectului</h1>
-          <input
-            type="text"
-            value={projectName}
-            onChange={(e) => setProjectName(e.target.value)}
-            placeholder="Introduceți numele proiectului"
-            className="w-full border border-gray-300 rounded-md px-4 py-2 focus:outline-none focus:ring-2 focus:ring-gray-400"
-          />
+            <h2 className="text-2xl font-semibold mb-4">Numele Proiectului</h2>
+            <input
+                type="text"
+                value={projectName}
+                onChange={(e) => setProjectName(e.target.value)}
+                placeholder="Introduceți numele proiectului"
+                className="w-full border border-gray-300 rounded-md px-4 py-2 focus:outline-none focus:ring-2 focus:ring-gray-400"
+            />
         </div>
 
         {/* Informatii generale */}
@@ -140,7 +150,9 @@ const AddProjectPage = () => {
 
           {/* Categoria */}
           <div>
-            <label className="block mb-1 font-semibold">Categoria Proiectului</label>
+            <label className="block mb-1 font-semibold">
+              Categoria Proiectului
+            </label>
             <select
               value={projectCategory}
               onChange={(e) => setProjectCategory(e.target.value)}
@@ -157,17 +169,32 @@ const AddProjectPage = () => {
           {/* Images */}
           <div>
             <label className="block mb-1 font-semibold">Imagini Proiect</label>
-            <input
-              type="file"
-              multiple
-              accept="image/*"
-              onChange={handleImageUpload}
-              className="mb-2"
-            />
+            <label className="inline-block mb-2 px-4 py-2 bg-blue-600 text-white rounded-lg cursor-pointer hover:bg-blue-700 transition">
+              Browse Images
+              <input
+                type="file"
+                multiple
+                accept="image/*"
+                onChange={handleImageUpload}
+                className="hidden"
+              />
+            </label>
+            <span className="ml-4 font-medium">
+              {images.length} image{images.length !== 1 ? "s" : ""} selected
+            </span>
+
             <div className="flex gap-2 overflow-x-auto py-2">
               {images.map((img, idx) => (
-                <div key={idx} className="relative w-32 h-32 flex-shrink-0 border rounded-md overflow-hidden">
-                  <img src={img.url} alt="preview" className="w-full h-full object-cover" />
+                <div
+                  key={idx}
+                  className="relative w-32 h-32 flex-shrink-0 border rounded-md overflow-hidden cursor-pointer"
+                >
+                  <img
+                    src={img.url}
+                    alt="preview"
+                    className="w-full h-full object-cover"
+                    onClick={() => setPreviewImage(img.url)}
+                  />
                   <button
                     onClick={() => removeImage(idx)}
                     className="absolute top-1 right-1 bg-red-500 rounded-full p-1 text-white"
@@ -214,6 +241,20 @@ const AddProjectPage = () => {
             />
           </div>
         </div>
+
+        {/* Image Preview Popup */}
+        {previewImage && (
+          <div
+            className="fixed inset-0 bg-black/70 flex items-center justify-center z-50"
+            onClick={() => setPreviewImage(null)}
+          >
+            <img
+              src={previewImage}
+              alt="Preview"
+              className="max-h-[90%] max-w-[90%] rounded-lg shadow-lg"
+            />
+          </div>
+        )}
       </div>
 
       {/* Bottom Band */}
