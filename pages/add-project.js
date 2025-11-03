@@ -307,28 +307,29 @@ const AddProjectPage = () => {
           {/* Floor selection */}
           <div className="flex items-center gap-2">
             <select
-              value=""
-              onChange={(e) => {
+                value=""
+                onChange={(e) => {
                 const floorType = e.target.value;
                 if (floorType) {
-                  setFloors([...floors, { type: floorType, rooms: [] }]);
+                    setFloors([...floors, { type: floorType, rooms: [] }]);
                 }
-              }}
-              className={`flex items-center gap-2 px-4 py-2 bg-green-600 text-white font-semibold rounded-lg hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 ${
-                availableFloors.length === 0 ? "opacity-50 cursor-not-allowed" : ""
-              }`}
-              disabled={availableFloors.length === 0}
+                }}
+                className={`flex items-center gap-2 px-4 py-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500
+                ${availableFloors.length === 0 ? "opacity-50 cursor-not-allowed" : ""}
+                text-white bg-green-600 font-semibold hover:bg-green-700
+                `}
+                disabled={availableFloors.length === 0}
             >
-              <option value="" disabled className="bg-green-600 text-white">
+                <option value="" disabled>
                 + Adaugă Etaj
-              </option>
-              {availableFloors.map((f) => (
-                <option key={f} value={f}>
-                  {f}
                 </option>
-              ))}
+                {availableFloors.map((f) => (
+                <option key={f} value={f} className="text-black">
+                    {f}
+                </option>
+                ))}
             </select>
-          </div>
+           </div>
 
           {floors.map((floor, floorIndex) => (
             <div
