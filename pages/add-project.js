@@ -503,6 +503,48 @@ const AddProjectPage = () => {
         </div>
       </div>
 
+      {/* Buttons */}
+      <div className="flex justify-center gap-6 my-6">
+        <button
+          onClick={() =>
+            toast(
+              (t) => (
+                <div className="text-center">
+                  <p className="font-semibold mb-3">Abandonati planul?</p>
+                  <div className="flex justify-center gap-3">
+                    <button
+                      onClick={() => {
+                        toast.dismiss(t.id);
+                        router.push("/"); // revine la main page
+                      }}
+                      className="bg-[#3D3B3B] hover:bg-gray-700 text-white font-semibold px-6 py-3 rounded-lg shadow-md transition transform hover:scale-105"
+                    >
+                      Da
+                    </button>
+                    <button
+                      onClick={() => toast.dismiss(t.id)}
+                      className="bg-gray-300 hover:bg-gray-400 text-black font-semibold px-6 py-3 rounded-lg shadow-md transition transform hover:scale-105"
+                    >
+                      Nu
+                    </button>
+                  </div>
+                </div>
+              ),
+              { duration: 4000 }
+            )
+          }
+          className="bg-[#3D3B3B] hover:bg-gray-700 text-white font-semibold px-6 py-3 rounded-lg shadow-md transition transform hover:scale-105"
+        >
+          Anulați
+        </button>
+
+        <button
+          className="bg-[#3D3B3B] hover:bg-gray-700 text-white font-semibold px-6 py-3 rounded-lg shadow-md transition transform hover:scale-105"
+        >
+          Adaugare proiect
+        </button>
+      </div>
+
       {/* Image Preview Popup */}
       {previewImage && (
         <div
