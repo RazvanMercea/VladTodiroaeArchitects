@@ -543,7 +543,7 @@ const AddProjectPage = () => {
 
         <button
             onClick={async () => {
-                // 1️⃣ Validate fields
+                // Validate fields
                 const isValid = validateProject(
                 projectName,
                 images,
@@ -559,7 +559,7 @@ const AddProjectPage = () => {
                 return;
                 }
 
-                // 2️⃣ Build project object
+                // Build object
                 const projectData = {
                 id: uuidv4(),
                 name: projectName,
@@ -570,12 +570,10 @@ const AddProjectPage = () => {
                 floors,
                 createdBy: loggedUser?.email || "unknown",
                 createdAt: new Date().toISOString(),
-                // just store file names for now
-                imageNames: images.map((img) => img.file.name),
-                planNames: Object.keys(plans).map((key) => plans[key].file.name),
+                images,
+                plans
                 };
 
-                // 3️⃣ Insert project into Firestore
                 const result = await addProjectToDatabase(projectData);
 
                 if (result.success) {
