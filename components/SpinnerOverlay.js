@@ -7,10 +7,10 @@ const SpinnerOverlay = () => {
       <Lottie
         animationData={require("../public/animations/house.json")}
         loop={true}
-        className="w-32 h-32 mb-4"
+        className="w-96 h-96 mb-6 max-w-full max-h-[80vh]"
       />
-      <p className="text-white font-semibold text-lg animate-pulse">
-        Se adauga nou proiect...
+      <p className="text-white font-semibold text-2xl animate-pulse">
+        Se adauga un proiect nou...
       </p>
     </div>
   );
