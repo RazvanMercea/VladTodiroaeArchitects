@@ -6,6 +6,9 @@ import { useRouter } from "next/router";
 import toast from "react-hot-toast";
 import { CATEGORIES, ROOM_TYPES } from "@/lib/constants";
 import { CATEGORY_FLOOR_RULES, ALL_FLOORS } from "@/lib/helpers";
+import { validateProject } from "@/lib/projectValidation";
+import { addProjectToDatabase } from "@/lib/projectService";
+import { v4 as uuidv4 } from "uuid";
 
 const CONTACT_PHONE = process.env.NEXT_PUBLIC_CONTACT_PHONE;
 const CONTACT_EMAIL = process.env.NEXT_PUBLIC_CONTACT_EMAIL;
@@ -539,9 +542,52 @@ const AddProjectPage = () => {
         </button>
 
         <button
-          className="bg-[#3D3B3B] hover:bg-gray-700 text-white font-semibold px-6 py-3 rounded-lg shadow-md transition transform hover:scale-105"
-        >
-          Adaugare proiect
+            onClick={async () => {
+                // 1️⃣ Validate fields
+                const isValid = validateProject(
+                projectName,
+                images,
+                projectPrice,
+                totalMP,
+                usableMP,
+                floors,
+                plans
+                );
+
+                if (!isValid) {
+                toast.error("Vă rugăm completați toate câmpurile!");
+                return;
+                }
+
+                // 2️⃣ Build project object
+                const projectData = {
+                id: uuidv4(),
+                name: projectName,
+                category: projectCategory,
+                price: Number(projectPrice),
+                totalMP: Number(totalMP),
+                usableMP: Number(usableMP),
+                floors,
+                createdBy: loggedUser?.email || "unknown",
+                createdAt: new Date().toISOString(),
+                // just store file names for now
+                imageNames: images.map((img) => img.file.name),
+                planNames: Object.keys(plans).map((key) => plans[key].file.name),
+                };
+
+                // 3️⃣ Insert project into Firestore
+                const result = await addProjectToDatabase(projectData);
+
+                if (result.success) {
+                toast.success("Proiect adăugat cu succes!");
+                router.push("/");
+                } else {
+                toast.error("A apărut o eroare la adăugarea proiectului.");
+                }
+            }}
+            className="bg-[#3D3B3B] hover:bg-gray-700 text-white font-semibold px-6 py-3 rounded-lg shadow-md transition transform hover:scale-105"
+            >
+            Adăugare proiect
         </button>
       </div>
 
