@@ -9,6 +9,7 @@ import { CATEGORY_FLOOR_RULES, ALL_FLOORS } from "@/lib/helpers";
 import { validateProject } from "@/lib/projectValidation";
 import { addProjectToDatabase } from "@/lib/projectService";
 import { v4 as uuidv4 } from "uuid";
+import SpinnerOverlay from "@/components/SpinnerOverlay";
 
 const CONTACT_PHONE = process.env.NEXT_PUBLIC_CONTACT_PHONE;
 const CONTACT_EMAIL = process.env.NEXT_PUBLIC_CONTACT_EMAIL;
@@ -17,6 +18,8 @@ const ADMIN_EMAIL = process.env.NEXT_PUBLIC_ADMIN_EMAIL;
 const AddProjectPage = () => {
   const router = useRouter();
   const [loggedUser, setLoggedUser] = useState(null);
+
+  const [loading, setLoading] = useState(false);
 
   const [projectName, setProjectName] = useState("");
   const [projectCategory, setProjectCategory] = useState(CATEGORIES[0]);
@@ -160,6 +163,7 @@ const AddProjectPage = () => {
 
   return (
     <div className="min-h-screen flex flex-col bg-white">
+      {loading && <SpinnerOverlay />}
       {/* Top Band */}
       <div
         className="w-full h-12 flex justify-between items-center px-6 text-sm text-white shadow-md"
@@ -543,7 +547,6 @@ const AddProjectPage = () => {
 
         <button
             onClick={async () => {
-                // Validate fields
                 const isValid = validateProject(
                 projectName,
                 images,
@@ -558,6 +561,8 @@ const AddProjectPage = () => {
                 toast.error("Vă rugăm completați toate câmpurile!");
                 return;
                 }
+
+                setLoading(true);
 
                 // Build object
                 const projectData = {
@@ -575,6 +580,8 @@ const AddProjectPage = () => {
                 };
 
                 const result = await addProjectToDatabase(projectData);
+
+                setLoading(false);
 
                 if (result.success) {
                 toast.success("Proiect adăugat cu succes!");
