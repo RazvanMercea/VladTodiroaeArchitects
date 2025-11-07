@@ -166,7 +166,7 @@ const AddProjectPage = () => {
       {loading && <SpinnerOverlay />}
       {/* Top Band */}
       <div
-        className="w-full h-12 flex justify-between items-center px-6 text-sm text-white shadow-md"
+        className="fixed w-full h-12 flex justify-between items-center px-6 text-sm text-white shadow-md"
         style={{ backgroundColor: "#3D3B3B" }}
       >
         <div className="flex items-center gap-2">
@@ -203,7 +203,7 @@ const AddProjectPage = () => {
       </div>
 
       {/* Main Content */}
-      <div className="flex-grow px-6 py-8 space-y-10">
+      <div className="flex-grow overflow-auto px-6 py-8 space-y-10">
         {/* Project Title */}
         <div>
           <h2 className="text-2xl font-semibold mb-4 text-gray-800">
@@ -612,7 +612,7 @@ const AddProjectPage = () => {
 
       {/* Bottom Band */}
       <footer
-        className="w-full h-10 flex justify-end items-center px-6 text-sm text-white shadow-md"
+        className="fixed w-full h-10 flex justify-end items-center px-6 text-sm text-white shadow-md"
         style={{ backgroundColor: "#3D3B3B" }}
       >
         <div className="flex items-center gap-6">
