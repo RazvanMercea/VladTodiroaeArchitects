@@ -143,7 +143,7 @@ const ProjectList = () => {
   return (
     <div className="min-h-screen flex flex-col">
       {/* Top band */}
-      <div className="fixed w-full h-12 flex justify-between items-center px-6 text-sm text-white shadow-md bg-[#3D3B3B]">
+      <div className="fixed w-full h-12 flex justify-between items-center px-6 text-sm text-white shadow-md bg-[#3D3B3B] z-10">
         <div>
           {loggedUser && <span className="font-semibold">Conectat ca: {loggedUser.email}</span>}
         </div>
@@ -163,22 +163,33 @@ const ProjectList = () => {
         </div>
       </div>
 
-      {/* Titlu */}
-      <div className="text-center pt-16">
-        <h1 className="text-3xl font-bold text-gray-800">{category}</h1>
+      {/* Title card */}
+      <div className="flex justify-center mt-16">
+        <div className="bg-gray-100 rounded-lg shadow-lg p-6 w-full flex flex-col lg:flex-row gap-6 max-w-[1200px]">
+          <div className="flex-1 flex items-center justify-center min-h-[100px]">
+            <h1 className="text-3xl font-bold text-gray-800 text-center">
+              {category}
+            </h1>
+          </div>
+        </div>
       </div>
 
-      {/* Conținut scrollable */}
-      <div className="flex-grow overflow-auto px-6 pb-28 mt-12 mb-10">
+      {/* Main content */}
+      <div className="flex-grow overflow-auto px-6 pb-28 mt-6 mb-10 relative z-0">
         <div className={`flex flex-col lg:flex-row justify-center items-start gap-6`}>
-          {/* Proiecte */}
+          {/* Projects */}
           <div className={`grid gap-6 ${
             singleProject ? "grid-cols-1 w-full max-w-xl" : "grid-cols-1 sm:grid-cols-2 flex-1"
           }`}>
             {filteredProjects.length === 0 ? (
-              <p className="text-gray-600 text-center col-span-2">
-                Nu există proiecte care să corespundă filtrării.
-              </p>
+              <div className="flex flex-col justify-center items-center h-full py-20 px-4">
+                <p className="text-gray-700 text-center text-lg mb-4">
+                  Din păcate nu există proiecte care să corespundă căutării dumneavoastră.
+                </p>
+                <p className="text-gray-700 text-center text-lg">
+                  Contactați-ne pentru un proiect personalizat!
+                </p>
+              </div>
             ) : (
               filteredProjects.map((project) => (
                 <ProjectCard key={project.id} project={project} countRooms={countRooms} />
@@ -186,8 +197,8 @@ const ProjectList = () => {
             )}
           </div>
 
-          {/* Filtre */}
-          <div className={`${singleProject ? "w-full max-w-xl mt-6" : "lg:w-1/3 w-full"} space-y-8`}>
+          {/* Filters */}
+          <div className={`${singleProject ? "w-full max-w-xl" : "lg:w-1/3 w-full"} space-y-8`}>
             <div className="bg-gray-100 rounded-lg shadow-lg p-6 h-fit">
               <h2 className="text-xl font-semibold text-gray-800 mb-4">Filtre</h2>
 
@@ -296,8 +307,8 @@ const ProjectList = () => {
         </div>
       </div>
 
-      {/* Footer fix la bottom */}
-      <footer className="fixed w-full h-10 flex justify-end items-center px-6 text-sm text-white shadow-md bg-[#3D3B3B] sticky bottom-0">
+      {/* Footer */}
+      <footer className="fixed w-full h-10 flex justify-end items-center px-6 text-sm text-white shadow-md bg-[#3D3B3B] bottom-0 z-10">
         <div className="flex items-center gap-6">
           <div className="flex items-center gap-2">
             <Phone size={16} />
