@@ -164,7 +164,7 @@ const ProjectList = () => {
       </div>
 
       {/* Titlu */}
-      <div className="text-center mt-6">
+      <div className="text-center pt-16">
         <h1 className="text-3xl font-bold text-gray-800">{category}</h1>
       </div>
 
