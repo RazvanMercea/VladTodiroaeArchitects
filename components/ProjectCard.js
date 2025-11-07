@@ -24,21 +24,13 @@ const ProjectCard = ({ project, countRooms }) => {
     }
   }, [isHovered, project.images]);
 
-  const bedrooms = countRooms(project.floors, [
-    "Dormitor",
-    "Dormitor matrimonial",
-  ]);
-  const bathrooms = countRooms(project.floors, [
-    "Baie",
-    "Baie matrimoniala",
-    "Grup sanitar",
-  ]);
+  const bedrooms = countRooms(project.floors, ["Dormitor", "Dormitor matrimonial"]);
+  const bathrooms = countRooms(project.floors, ["Baie", "Baie matrimoniala", "Grup sanitar"]);
   const offices = countRooms(project.floors, ["Birou"]);
   const garages = countRooms(project.floors, ["Garaj"]);
 
   return (
-    <div className="bg-gray-100 rounded-lg shadow-lg overflow-hidden hover:shadow-2xl transition-shadow duration-300 flex flex-col sm:flex-row transform hover:scale-[1.01]">
-      {/* Image slideshow */}
+    <div className="bg-gray-100 rounded-lg shadow-lg overflow-hidden hover:shadow-2xl transition-transform duration-300 flex flex-col sm:flex-row hover:scale-[1.01]">
       <div
         className="relative sm:w-1/2 w-full h-56"
         onMouseEnter={() => setIsHovered(true)}
@@ -58,12 +50,11 @@ const ProjectCard = ({ project, countRooms }) => {
         />
       </div>
 
-      {/* Project info */}
       <div className="flex flex-col justify-between p-4 sm:w-1/2 w-full">
         <div>
           <div className="flex justify-between items-center mb-2">
             <h2 className="text-xl font-semibold text-gray-800">{project.name}</h2>
-            <div className="bg-gray-700 text-white px-3 py-1 rounded-lg flex items-center gap-1">
+            <div className="bg-[#3D3B3B] text-white px-3 py-1 rounded-lg flex items-center gap-1">
               <span>{project.price}</span>
               <Euro size={14} />
             </div>
@@ -72,30 +63,30 @@ const ProjectCard = ({ project, countRooms }) => {
           <div className="space-y-2 text-gray-700">
             {bedrooms > 0 && (
               <div className="flex items-center gap-2">
-                <Bed className="text-gray-700" size={18} />
+                <Bed className="text-[#3D3B3B]" size={18} />
                 <span>{bedrooms} dormitoare</span>
               </div>
             )}
             {offices > 0 && (
               <div className="flex items-center gap-2">
-                <Laptop className="text-gray-700" size={18} />
+                <Laptop className="text-[#3D3B3B]" size={18} />
                 <span>{offices} birou</span>
               </div>
             )}
             {bathrooms > 0 && (
               <div className="flex items-center gap-2">
-                <Bath className="text-gray-700" size={18} />
+                <Bath className="text-[#3D3B3B]" size={18} />
                 <span>{bathrooms} băi</span>
               </div>
             )}
             {garages > 0 && (
               <div className="flex items-center gap-2">
-                <Car className="text-gray-700" size={18} />
+                <Car className="text-[#3D3B3B]" size={18} />
                 <span>{garages} garaj</span>
               </div>
             )}
             <div className="flex items-center gap-2">
-              <Home className="text-gray-700" size={18} />
+              <Home className="text-[#3D3B3B]" size={18} />
               <span>{project.usableMP} metri pătrați</span>
             </div>
           </div>

@@ -8,6 +8,7 @@ import toast from "react-hot-toast";
 import { signOut } from "firebase/auth";
 import ProjectCard from "@/components/ProjectCard";
 import { CATEGORIES } from "@/lib/constants";
+import { Range } from "react-range";
 
 const ProjectList = () => {
   const router = useRouter();
@@ -17,8 +18,6 @@ const ProjectList = () => {
   const [filteredProjects, setFilteredProjects] = useState([]);
   const [loading, setLoading] = useState(true);
   const [loggedUser, setLoggedUser] = useState(null);
-
-  // Filtre
   const [filters, setFilters] = useState({
     bedrooms: "",
     bathrooms: "",
@@ -32,7 +31,6 @@ const ProjectList = () => {
     if (storedUser) setLoggedUser(JSON.parse(storedUser));
   }, []);
 
-  // Fetch projects + preload images
   useEffect(() => {
     if (!category) return;
     setLoading(true);
@@ -91,24 +89,17 @@ const ProjectList = () => {
           countRooms(p.floors, ["Dormitor", "Dormitor matrimonial"]) ===
           Number(bedrooms)
       );
-
     if (bathrooms)
       result = result.filter(
         (p) =>
           countRooms(p.floors, ["Baie", "Baie matrimoniala", "Grup sanitar"]) ===
           Number(bathrooms)
       );
-
-    if (hasGarage)
-      result = result.filter((p) => countRooms(p.floors, ["Garaj"]) > 0);
-
-    if (maxMP)
-      result = result.filter((p) => Number(p.usableMP) <= Number(maxMP));
-
+    if (hasGarage) result = result.filter((p) => countRooms(p.floors, ["Garaj"]) > 0);
+    if (maxMP) result = result.filter((p) => Number(p.usableMP) <= Number(maxMP));
     if (priceRange[0] > 250 || priceRange[1] < 10000)
       result = result.filter(
-        (p) =>
-          Number(p.price) >= priceRange[0] && Number(p.price) <= priceRange[1]
+        (p) => Number(p.price) >= priceRange[0] && Number(p.price) <= priceRange[1]
       );
 
     setFilteredProjects(result);
@@ -148,8 +139,6 @@ const ProjectList = () => {
   if (loading) return <SpinnerOverlay />;
 
   const singleProject = filteredProjects.length === 1;
-
-  // Alte categorii
   const otherCategories = CATEGORIES.filter((c) => c.text !== category);
 
   return (
@@ -160,24 +149,15 @@ const ProjectList = () => {
           {loggedUser && <span className="font-semibold">Conectat ca: {loggedUser.email}</span>}
         </div>
         <div className="flex items-center gap-4">
-          <button
-            onClick={() => router.push("/")}
-            className="hover:text-gray-300 transition"
-          >
+          <button onClick={() => router.push("/")} className="hover:text-gray-300 transition">
             Home
           </button>
           {!loggedUser ? (
-            <button
-              onClick={() => router.push("/login")}
-              className="hover:text-gray-300 transition"
-            >
+            <button onClick={() => router.push("/login")} className="hover:text-gray-300 transition">
               Login
             </button>
           ) : (
-            <button
-              onClick={handleLogout}
-              className="hover:text-gray-300 transition"
-            >
+            <button onClick={handleLogout} className="hover:text-gray-300 transition">
               Logout
             </button>
           )}
@@ -190,17 +170,13 @@ const ProjectList = () => {
       </div>
 
       {/* Conținut */}
-      <div
-        className={`flex-grow flex flex-col lg:flex-row justify-center items-start gap-6 mt-8 px-6 pb-10 ${
-          singleProject ? "items-center" : ""
-        }`}
-      >
-        {/* Stânga: proiecte */}
-        <div
-          className={`grid gap-6 ${
-            singleProject ? "grid-cols-1 w-full max-w-xl" : "grid-cols-1 sm:grid-cols-2 flex-1"
-          }`}
-        >
+      <div className={`flex-grow flex flex-col lg:flex-row justify-center items-start gap-6 mt-8 px-6 pb-10 ${
+        singleProject ? "items-center" : ""
+      }`}>
+        {/* Proiecte */}
+        <div className={`grid gap-6 ${
+          singleProject ? "grid-cols-1 w-full max-w-xl" : "grid-cols-1 sm:grid-cols-2 flex-1"
+        }`}>
           {filteredProjects.length === 0 ? (
             <p className="text-gray-600 text-center col-span-2">
               Nu există proiecte care să corespundă filtrării.
@@ -212,17 +188,12 @@ const ProjectList = () => {
           )}
         </div>
 
-        {/* Dreapta: filtre + alte categorii */}
-        <div
-          className={`${
-            singleProject ? "w-full max-w-xl mt-6" : "lg:w-1/3 w-full"
-          } space-y-8`}
-        >
-          {/* 🔹 Filtre */}
+        {/* Filtre */}
+        <div className={`${singleProject ? "w-full max-w-xl mt-6" : "lg:w-1/3 w-full"} space-y-8`}>
           <div className="bg-gray-100 rounded-lg shadow-lg p-6 h-fit">
             <h2 className="text-xl font-semibold text-gray-800 mb-4">Filtre</h2>
 
-            {/* Numar dormitoare */}
+            {/* Dormitoare, băi, garaj, MP */}
             <label className="block mb-2 font-medium text-gray-700">Număr dormitoare:</label>
             <select
               value={filters.bedrooms}
@@ -231,13 +202,10 @@ const ProjectList = () => {
             >
               <option value="">Toate</option>
               {[1, 2, 3, 4, 5].map((n) => (
-                <option key={n} value={n}>
-                  {n}
-                </option>
+                <option key={n} value={n}>{n}</option>
               ))}
             </select>
 
-            {/* Numar bai */}
             <label className="block mb-2 font-medium text-gray-700">Număr băi:</label>
             <select
               value={filters.bathrooms}
@@ -246,13 +214,10 @@ const ProjectList = () => {
             >
               <option value="">Toate</option>
               {[1, 2, 3, 4, 5].map((n) => (
-                <option key={n} value={n}>
-                  {n}
-                </option>
+                <option key={n} value={n}>{n}</option>
               ))}
             </select>
 
-            {/* Garaj */}
             <label className="flex items-center gap-2 mb-4">
               <input
                 type="checkbox"
@@ -262,7 +227,6 @@ const ProjectList = () => {
               <span>Cu garaj</span>
             </label>
 
-            {/* Max MP */}
             <label className="block mb-2 font-medium text-gray-700">Metri pătrați maximi:</label>
             <input
               type="number"
@@ -272,42 +236,44 @@ const ProjectList = () => {
               placeholder="ex: 150"
             />
 
-            {/* Slider pret */}
+            {/* Slider unitar */}
             <label className="block mb-2 font-medium text-gray-700">
               Interval preț (€): {filters.priceRange[0]} - {filters.priceRange[1]}
             </label>
-            <div className="flex items-center gap-2 mb-6">
-              <input
-                type="range"
-                min="250"
-                max="10000"
-                value={filters.priceRange[0]}
-                onChange={(e) =>
-                  setFilters({
-                    ...filters,
-                    priceRange: [Number(e.target.value), filters.priceRange[1]],
-                  })
-                }
-                className="w-full accent-gray-700"
-              />
-              <input
-                type="range"
-                min="250"
-                max="10000"
-                value={filters.priceRange[1]}
-                onChange={(e) =>
-                  setFilters({
-                    ...filters,
-                    priceRange: [filters.priceRange[0], Number(e.target.value)],
-                  })
-                }
-                className="w-full accent-gray-700"
-              />
-            </div>
+            <Range
+              step={50}
+              min={250}
+              max={10000}
+              values={filters.priceRange}
+              onChange={(values) => setFilters({ ...filters, priceRange: values })}
+              renderTrack={({ props, children }) => (
+                <div
+                  {...props}
+                  className="h-2 rounded-full bg-gray-300 mt-3 mb-6 relative"
+                >
+                  <div
+                    style={{
+                      position: "absolute",
+                      height: "100%",
+                      background: "#3D3B3B",
+                      left: `${((filters.priceRange[0] - 250) / (10000 - 250)) * 100}%`,
+                      width: `${((filters.priceRange[1] - filters.priceRange[0]) / (10000 - 250)) * 100}%`,
+                    }}
+                  />
+                  {children}
+                </div>
+              )}
+              renderThumb={({ props }) => (
+                <div
+                  {...props}
+                  className="w-5 h-5 bg-[#3D3B3B] rounded-full cursor-pointer"
+                />
+              )}
+            />
 
             <button
               onClick={handleFilter}
-              className="w-full bg-gray-700 hover:bg-gray-800 text-white font-semibold py-2 rounded-lg transition"
+              className="w-full bg-[#3D3B3B] hover:bg-gray-800 text-white font-semibold py-2 rounded-lg transition"
             >
               Căutați
             </button>
@@ -320,8 +286,10 @@ const ProjectList = () => {
               {otherCategories.map((c) => (
                 <button
                   key={c.text}
-                  onClick={() => router.push(`/project-list?category=${encodeURIComponent(c.text)}`)}
-                  className="block w-full text-left bg-gray-700 hover:bg-gray-800 text-white px-4 py-2 rounded-lg transition"
+                  onClick={() =>
+                    router.push(`/project-list?category=${encodeURIComponent(c.text)}`)
+                  }
+                  className="block w-full text-left bg-[#3D3B3B] hover:bg-gray-800 text-white px-4 py-2 rounded-lg transition"
                 >
                   {c.text}
                 </button>
