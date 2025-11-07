@@ -73,30 +73,30 @@ const ProjectCard = ({ project, countRooms }) => {
             {bedrooms > 0 && (
               <div className="flex items-center gap-2">
                 <Bed className="text-gray-700" size={18} />
-                <span>{bedrooms} dormitoare</span>
+                <span>{bedrooms}</span>
               </div>
             )}
             {offices > 0 && (
               <div className="flex items-center gap-2">
                 <Laptop className="text-gray-700" size={18} />
-                <span>{offices} birouri</span>
+                <span>{offices}</span>
               </div>
             )}
             {bathrooms > 0 && (
               <div className="flex items-center gap-2">
                 <Bath className="text-gray-700" size={18} />
-                <span>{bathrooms} băi</span>
+                <span>{bathrooms}</span>
               </div>
             )}
             {garages > 0 && (
               <div className="flex items-center gap-2">
                 <Car className="text-gray-700" size={18} />
-                <span>{garages} garaje</span>
+                <span>{garages}</span>
               </div>
             )}
             <div className="flex items-center gap-2">
               <Home className="text-gray-700" size={18} />
-              <span>{project.usableMP} mp utili</span>
+              <span>{project.usableMP}</span>
             </div>
           </div>
         </div>

@@ -21,7 +21,7 @@ const ProjectList = () => {
     if (storedUser) setLoggedUser(JSON.parse(storedUser));
   }, []);
 
-  // Fetch projects
+  // Fetch projects + preload images
   useEffect(() => {
     if (!category) return;
     setLoading(true);
@@ -34,11 +34,26 @@ const ProjectList = () => {
           id: doc.id,
           ...doc.data(),
         }));
+
+        // Preload all images
+        const allImages = projectList.flatMap((p) => p.images || []);
+        await Promise.all(
+          allImages.map(
+            (src) =>
+              new Promise((resolve) => {
+                const img = new Image();
+                img.src = src;
+                img.onload = () => resolve(true);
+                img.onerror = () => resolve(true); // avoid hanging on error
+              })
+          )
+        );
+
         setProjects(projectList);
       } catch (error) {
         console.error("Error fetching projects:", error);
       } finally {
-        setLoading(false);
+        setLoading(false); // hide spinner only after images are ready
       }
     };
 
@@ -88,7 +103,6 @@ const ProjectList = () => {
 
   if (loading) return <SpinnerOverlay />;
 
-  // Layout mode: one project => center
   const singleProject = projects.length === 1;
 
   return (
@@ -159,7 +173,7 @@ const ProjectList = () => {
         {/* Right: Filters */}
         <div
           className={`${
-            singleProject ? "w-full max-w-xl" : "lg:w-1/3 w-full"
+            singleProject ? "w-full max-w-xl mt-6 lg:mt-0" : "lg:w-1/3 w-full"
           } bg-gray-100 rounded-lg shadow-lg p-6 h-fit`}
         >
           <h2 className="text-xl font-semibold text-gray-800 mb-4">Filtre</h2>
