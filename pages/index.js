@@ -64,7 +64,7 @@ const MainPage = () => {
     <div className="min-h-screen flex flex-col bg-white">
       {/* Top band */}
       <div
-        className="w-full h-12 flex justify-between items-center px-6 text-sm text-white shadow-md"
+        className="fixed w-full h-12 flex justify-between items-center px-6 text-sm text-white shadow-md"
         style={{ backgroundColor: "#3D3B3B" }}
       >
         {/* Left side: logged-in user */}
@@ -104,7 +104,7 @@ const MainPage = () => {
       </div>
 
       {/* Main content area */}
-      <div className="flex-grow">
+      <div className="flex-grow pt-16 overflow-auto">
         {/* Header */}
         <div className="relative h-[350px] w-full shadow-lg">
           <img
@@ -163,7 +163,7 @@ const MainPage = () => {
 
       {/* Bottom Band */}
       <footer
-        className="w-full h-10 flex justify-end items-center px-6 text-sm text-white shadow-md"
+        className="fixed w-full h-10 flex justify-end items-center px-6 text-sm text-white shadow-md"
         style={{ backgroundColor: "#3D3B3B" }}
       >
         <div className="flex items-center gap-6">

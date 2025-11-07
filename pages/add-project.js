@@ -206,7 +206,7 @@ const AddProjectPage = () => {
       <div className="flex-grow overflow-auto px-6 py-8 space-y-10">
         {/* Project Title */}
         <div>
-          <h2 className="text-2xl font-semibold mb-4 text-gray-800">
+          <h2 className="text-2xl font-semibold mb-4 text-gray-800 pt-16">
             Numele Proiectului
           </h2>
           <input
@@ -511,7 +511,7 @@ const AddProjectPage = () => {
       </div>
 
       {/* Buttons */}
-      <div className="flex justify-center gap-6 my-6">
+      <div className="flex justify-center gap-6 my-6 pb-24">
         <button
           onClick={() =>
             toast(
