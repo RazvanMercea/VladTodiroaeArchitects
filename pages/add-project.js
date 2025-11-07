@@ -612,7 +612,7 @@ const AddProjectPage = () => {
 
       {/* Bottom Band */}
       <footer
-        className="fixed w-full h-10 flex justify-end items-center px-6 text-sm text-white shadow-md"
+        className="fixed bottom-0 left-0 w-full h-10 flex justify-end items-center px-6 text-sm text-white shadow-md"
         style={{ backgroundColor: "#3D3B3B" }}
       >
         <div className="flex items-center gap-6">
