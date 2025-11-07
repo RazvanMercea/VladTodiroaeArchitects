@@ -280,22 +280,22 @@ const ProjectList = () => {
           </div>
 
           {/* Alte categorii */}
-          <div className="bg-gray-100 rounded-lg shadow-lg p-6 h-fit">
+            <div className="bg-gray-100 rounded-lg shadow-lg p-6 h-fit">
             <h2 className="text-xl font-semibold text-gray-800 mb-4">Alte categorii</h2>
             <div className="space-y-3">
-              {otherCategories.map((c) => (
+                {CATEGORIES.filter((c) => c !== category).map((c) => (
                 <button
-                  key={c.text}
-                  onClick={() =>
-                    router.push(`/project-list?category=${encodeURIComponent(c.text)}`)
-                  }
-                  className="block w-full text-left bg-[#3D3B3B] hover:bg-gray-800 text-white px-4 py-2 rounded-lg transition"
+                    key={c}
+                    onClick={() =>
+                    router.push(`/project-list?category=${encodeURIComponent(c)}`)
+                    }
+                    className="block w-full text-left bg-[#3D3B3B] hover:bg-gray-800 text-white px-4 py-2 rounded-lg transition"
                 >
-                  {c.text}
+                    {c}
                 </button>
-              ))}
+                ))}
             </div>
-          </div>
+            </div>
         </div>
       </div>
 
