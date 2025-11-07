@@ -7,7 +7,7 @@ import { Phone, Mail } from "lucide-react";
 import toast from "react-hot-toast";
 import { signOut } from "firebase/auth";
 import ProjectCard from "@/components/ProjectCard";
-import { CATEGORIES } from "@/constants";
+import { CATEGORIES } from "@/lib/constants";
 
 const ProjectList = () => {
   const router = useRouter();
