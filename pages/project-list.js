@@ -139,12 +139,11 @@ const ProjectList = () => {
   if (loading) return <SpinnerOverlay />;
 
   const singleProject = filteredProjects.length === 1;
-  const otherCategories = CATEGORIES.filter((c) => c.text !== category);
 
   return (
     <div className="min-h-screen flex flex-col">
       {/* Top band */}
-      <div className="w-full h-12 flex justify-between items-center px-6 text-sm text-white shadow-md bg-[#3D3B3B]">
+      <div className="fixed w-full h-12 flex justify-between items-center px-6 text-sm text-white shadow-md bg-[#3D3B3B]">
         <div>
           {loggedUser && <span className="font-semibold">Conectat ca: {loggedUser.email}</span>}
         </div>
@@ -169,138 +168,136 @@ const ProjectList = () => {
         <h1 className="text-3xl font-bold text-gray-800">{category}</h1>
       </div>
 
-      {/* Conținut */}
-      <div className={`flex-grow flex flex-col lg:flex-row justify-center items-start gap-6 mt-8 px-6 pb-10 ${
-        singleProject ? "items-center" : ""
-      }`}>
-        {/* Proiecte */}
-        <div className={`grid gap-6 ${
-          singleProject ? "grid-cols-1 w-full max-w-xl" : "grid-cols-1 sm:grid-cols-2 flex-1"
-        }`}>
-          {filteredProjects.length === 0 ? (
-            <p className="text-gray-600 text-center col-span-2">
-              Nu există proiecte care să corespundă filtrării.
-            </p>
-          ) : (
-            filteredProjects.map((project) => (
-              <ProjectCard key={project.id} project={project} countRooms={countRooms} />
-            ))
-          )}
-        </div>
-
-        {/* Filtre */}
-        <div className={`${singleProject ? "w-full max-w-xl mt-6" : "lg:w-1/3 w-full"} space-y-8`}>
-          <div className="bg-gray-100 rounded-lg shadow-lg p-6 h-fit">
-            <h2 className="text-xl font-semibold text-gray-800 mb-4">Filtre</h2>
-
-            {/* Dormitoare, băi, garaj, MP */}
-            <label className="block mb-2 font-medium text-gray-700">Număr dormitoare:</label>
-            <select
-              value={filters.bedrooms}
-              onChange={(e) => setFilters({ ...filters, bedrooms: e.target.value })}
-              className="w-full border rounded-lg p-2 mb-4"
-            >
-              <option value="">Toate</option>
-              {[1, 2, 3, 4, 5].map((n) => (
-                <option key={n} value={n}>{n}</option>
-              ))}
-            </select>
-
-            <label className="block mb-2 font-medium text-gray-700">Număr băi:</label>
-            <select
-              value={filters.bathrooms}
-              onChange={(e) => setFilters({ ...filters, bathrooms: e.target.value })}
-              className="w-full border rounded-lg p-2 mb-4"
-            >
-              <option value="">Toate</option>
-              {[1, 2, 3, 4, 5].map((n) => (
-                <option key={n} value={n}>{n}</option>
-              ))}
-            </select>
-
-            <label className="flex items-center gap-2 mb-4">
-              <input
-                type="checkbox"
-                checked={filters.hasGarage}
-                onChange={(e) => setFilters({ ...filters, hasGarage: e.target.checked })}
-              />
-              <span>Cu garaj</span>
-            </label>
-
-            <label className="block mb-2 font-medium text-gray-700">Metri pătrați maximi:</label>
-            <input
-              type="number"
-              value={filters.maxMP}
-              onChange={(e) => setFilters({ ...filters, maxMP: e.target.value })}
-              className="w-full border rounded-lg p-2 mb-4"
-              placeholder="ex: 150"
-            />
-
-            {/* Slider unitar */}
-            <label className="block mb-2 font-medium text-gray-700">
-              Interval preț (€): {filters.priceRange[0]} - {filters.priceRange[1]}
-            </label>
-            <Range
-              step={50}
-              min={250}
-              max={10000}
-              values={filters.priceRange}
-              onChange={(values) => setFilters({ ...filters, priceRange: values })}
-              renderTrack={({ props, children }) => (
-                <div
-                  {...props}
-                  className="h-2 rounded-full bg-gray-300 mt-3 mb-6 relative"
-                >
-                  <div
-                    style={{
-                      position: "absolute",
-                      height: "100%",
-                      background: "#3D3B3B",
-                      left: `${((filters.priceRange[0] - 250) / (10000 - 250)) * 100}%`,
-                      width: `${((filters.priceRange[1] - filters.priceRange[0]) / (10000 - 250)) * 100}%`,
-                    }}
-                  />
-                  {children}
-                </div>
-              )}
-              renderThumb={({ props }) => (
-                <div
-                  {...props}
-                  className="w-5 h-5 bg-[#3D3B3B] rounded-full cursor-pointer"
-                />
-              )}
-            />
-
-            <button
-              onClick={handleFilter}
-              className="w-full bg-[#3D3B3B] hover:bg-gray-800 text-white font-semibold py-2 rounded-lg transition"
-            >
-              Căutați
-            </button>
+      {/* Conținut scrollable */}
+      <div className="flex-grow overflow-auto px-6 pb-28 mt-12 mb-10">
+        <div className={`flex flex-col lg:flex-row justify-center items-start gap-6`}>
+          {/* Proiecte */}
+          <div className={`grid gap-6 ${
+            singleProject ? "grid-cols-1 w-full max-w-xl" : "grid-cols-1 sm:grid-cols-2 flex-1"
+          }`}>
+            {filteredProjects.length === 0 ? (
+              <p className="text-gray-600 text-center col-span-2">
+                Nu există proiecte care să corespundă filtrării.
+              </p>
+            ) : (
+              filteredProjects.map((project) => (
+                <ProjectCard key={project.id} project={project} countRooms={countRooms} />
+              ))
+            )}
           </div>
 
-          {/* Alte categorii */}
+          {/* Filtre */}
+          <div className={`${singleProject ? "w-full max-w-xl mt-6" : "lg:w-1/3 w-full"} space-y-8`}>
             <div className="bg-gray-100 rounded-lg shadow-lg p-6 h-fit">
-            <h2 className="text-xl font-semibold text-gray-800 mb-4">Alte categorii</h2>
-            <div className="space-y-3">
+              <h2 className="text-xl font-semibold text-gray-800 mb-4">Filtre</h2>
+
+              <label className="block mb-2 font-medium text-gray-700">Număr dormitoare:</label>
+              <select
+                value={filters.bedrooms}
+                onChange={(e) => setFilters({ ...filters, bedrooms: e.target.value })}
+                className="w-full border rounded-lg p-2 mb-4"
+              >
+                <option value="">Toate</option>
+                {[1, 2, 3, 4, 5].map((n) => (
+                  <option key={n} value={n}>{n}</option>
+                ))}
+              </select>
+
+              <label className="block mb-2 font-medium text-gray-700">Număr băi:</label>
+              <select
+                value={filters.bathrooms}
+                onChange={(e) => setFilters({ ...filters, bathrooms: e.target.value })}
+                className="w-full border rounded-lg p-2 mb-4"
+              >
+                <option value="">Toate</option>
+                {[1, 2, 3, 4, 5].map((n) => (
+                  <option key={n} value={n}>{n}</option>
+                ))}
+              </select>
+
+              <label className="flex items-center gap-2 mb-4">
+                <input
+                  type="checkbox"
+                  checked={filters.hasGarage}
+                  onChange={(e) => setFilters({ ...filters, hasGarage: e.target.checked })}
+                />
+                <span>Cu garaj</span>
+              </label>
+
+              <label className="block mb-2 font-medium text-gray-700">Metri pătrați maximi:</label>
+              <input
+                type="number"
+                value={filters.maxMP}
+                onChange={(e) => setFilters({ ...filters, maxMP: e.target.value })}
+                className="w-full border rounded-lg p-2 mb-4"
+                placeholder="ex: 150"
+              />
+
+              <label className="block mb-2 font-medium text-gray-700">
+                Interval preț (€): {filters.priceRange[0]} - {filters.priceRange[1]}
+              </label>
+              <Range
+                step={50}
+                min={250}
+                max={10000}
+                values={filters.priceRange}
+                onChange={(values) => setFilters({ ...filters, priceRange: values })}
+                renderTrack={({ props, children }) => (
+                  <div
+                    {...props}
+                    className="h-2 rounded-full bg-gray-300 mt-3 mb-6 relative"
+                  >
+                    <div
+                      style={{
+                        position: "absolute",
+                        height: "100%",
+                        background: "#3D3B3B",
+                        left: `${((filters.priceRange[0] - 250) / (10000 - 250)) * 100}%`,
+                        width: `${((filters.priceRange[1] - filters.priceRange[0]) / (10000 - 250)) * 100}%`,
+                      }}
+                    />
+                    {children}
+                  </div>
+                )}
+                renderThumb={({ props }) => (
+                  <div
+                    {...props}
+                    className="w-5 h-5 bg-[#3D3B3B] rounded-full cursor-pointer"
+                  />
+                )}
+              />
+
+              <button
+                onClick={handleFilter}
+                className="w-full bg-[#3D3B3B] hover:bg-gray-800 text-white font-semibold py-2 rounded-lg transition"
+              >
+                Căutați
+              </button>
+            </div>
+
+            {/* Alte categorii */}
+            <div className="bg-gray-100 rounded-lg shadow-lg p-6 h-fit">
+              <h2 className="text-xl font-semibold text-gray-800 mb-4">Alte categorii</h2>
+              <div className="space-y-3">
                 {CATEGORIES.filter((c) => c !== category).map((c) => (
-                <button
+                  <button
                     key={c}
                     onClick={() =>
-                    router.push(`/project-list?category=${encodeURIComponent(c)}`)
+                      router.push(`/project-list?category=${encodeURIComponent(c)}`)
                     }
                     className="block w-full text-left bg-[#3D3B3B] hover:bg-gray-800 text-white px-4 py-2 rounded-lg transition"
-                >
+                  >
                     {c}
-                </button>
+                  </button>
                 ))}
+              </div>
             </div>
-            </div>
+          </div>
         </div>
       </div>
 
-      {/* Footer */}
-      <footer className="w-full h-10 flex justify-end items-center px-6 text-sm text-white shadow-md mt-auto bg-[#3D3B3B]">
+      {/* Footer fix la bottom */}
+      <footer className="fixed w-full h-10 flex justify-end items-center px-6 text-sm text-white shadow-md bg-[#3D3B3B] sticky bottom-0">
         <div className="flex items-center gap-6">
           <div className="flex items-center gap-2">
             <Phone size={16} />
