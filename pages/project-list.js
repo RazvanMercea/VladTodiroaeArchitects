@@ -164,13 +164,11 @@ const ProjectList = () => {
       </div>
 
       {/* Title card */}
-      <div className="flex justify-center mt-16">
-        <div className="bg-gray-100 rounded-lg shadow-lg p-6 w-full flex flex-col lg:flex-row gap-6 max-w-[1200px]">
-          <div className="flex-1 flex items-center justify-center min-h-[100px]">
-            <h1 className="text-3xl font-bold text-gray-800 text-center">
-              {category}
-            </h1>
-          </div>
+      <div className="flex justify-center mt-16 px-6">
+        <div className="bg-gray-100 rounded-lg shadow-lg p-4 w-full flex justify-center max-w-[1200px]">
+          <h1 className="text-3xl font-bold text-gray-800 text-center">
+            {category}
+          </h1>
         </div>
       </div>
 
