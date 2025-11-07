@@ -67,7 +67,7 @@ const MainPage = () => {
         className="w-full h-12 flex justify-between items-center px-6 text-sm text-white shadow-md"
         style={{ backgroundColor: "#3D3B3B" }}
       >
-        {/* Left side: logged-in user email */}
+        {/* Left side: logged-in user */}
         <div className="flex items-center gap-2">
           {loggedUser && (
             <span className="font-semibold text-white">
@@ -103,7 +103,7 @@ const MainPage = () => {
         </div>
       </div>
 
-      {/* Main content area (flex-grow ensures footer sticks to bottom) */}
+      {/* Main content area */}
       <div className="flex-grow">
         {/* Header */}
         <div className="relative h-[350px] w-full shadow-lg">
@@ -131,6 +131,7 @@ const MainPage = () => {
           {CARD_DATA.map((card, index) => (
             <div
               key={index}
+              onClick={() => router.push(`/project-list?category=${encodeURIComponent(card.text)}`)}
               className="max-w-sm w-full bg-[#3D3B3B] rounded-lg shadow-lg overflow-hidden text-center p-4 transform transition duration-300 hover:scale-105 hover:shadow-2xl"
             >
               <div className="text-white text-xl font-semibold mb-3">

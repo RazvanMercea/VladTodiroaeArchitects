@@ -16,7 +16,6 @@ const LoginPage = () => {
   const [error, setError] = useState("");
   const [loggedUser, setLoggedUser] = useState(null);
 
-  // Check if user is already logged in
   useEffect(() => {
     const storedUser = localStorage.getItem("loggedUser");
     if (storedUser) {
@@ -24,7 +23,6 @@ const LoginPage = () => {
     }
   }, []);
 
-  // Login function
   const handleLogin = async () => {
     if (!email || !password) {
       toast.error("Vă rugăm introduceți emailul și parola.");

@@ -10,7 +10,7 @@ const SpinnerOverlay = () => {
         className="w-96 h-96 mb-6 max-w-full max-h-[80vh]"
       />
       <p className="text-white font-semibold text-2xl animate-pulse">
-        Se adauga un proiect nou...
+        Se încarcă proiectele...
       </p>
     </div>
   );
