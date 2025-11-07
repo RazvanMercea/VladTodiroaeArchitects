@@ -3,13 +3,15 @@ import { useRouter } from "next/router";
 import { collection, getDocs, query, where } from "firebase/firestore";
 import { db, auth } from "@/lib/firebase";
 import SpinnerOverlay from "@/components/SpinnerOverlay";
-import {Bed,Bath,Home,Car,Laptop,Phone,Mail,Euro,} from "lucide-react";
-import { signOut } from "firebase/auth";
+import { Phone, Mail } from "lucide-react";
 import toast from "react-hot-toast";
+import { signOut } from "firebase/auth";
+import ProjectCard from "@/components/ProjectCard";
 
 const ProjectList = () => {
   const router = useRouter();
   const { category } = router.query;
+
   const [projects, setProjects] = useState([]);
   const [loading, setLoading] = useState(true);
   const [loggedUser, setLoggedUser] = useState(null);
@@ -22,13 +24,11 @@ const ProjectList = () => {
   // Fetch projects
   useEffect(() => {
     if (!category) return;
+    setLoading(true);
 
     const fetchProjects = async () => {
       try {
-        const q = query(
-          collection(db, "projects"),
-          where("category", "==", category)
-        );
+        const q = query(collection(db, "projects"), where("category", "==", category));
         const snapshot = await getDocs(q);
         const projectList = snapshot.docs.map((doc) => ({
           id: doc.id,
@@ -46,40 +46,36 @@ const ProjectList = () => {
   }, [category]);
 
   const handleLogout = () => {
-    toast(
-      (t) => (
-        <div className="text-center">
-          <p className="font-semibold mb-3">Sigur doriți să vă delogați?</p>
-          <div className="flex justify-center gap-3">
-            <button
-              onClick={() => {
-                signOut(auth)
-                  .then(() => {
-                    localStorage.removeItem("loggedUser");
-                    setLoggedUser(null);
-                    toast.dismiss(t.id);
-                    toast.success("V-ați delogat cu succes!");
-                  })
-                  .catch(() => toast.error("A apărut o eroare la delogare."));
-              }}
-              className="bg-red-600 hover:bg-red-700 text-white px-4 py-1 rounded-lg transition"
-            >
-              Da
-            </button>
-            <button
-              onClick={() => toast.dismiss(t.id)}
-              className="bg-gray-300 hover:bg-gray-400 text-black px-4 py-1 rounded-lg transition"
-            >
-              Nu
-            </button>
-          </div>
+    toast((t) => (
+      <div className="text-center">
+        <p className="font-semibold mb-3">Sigur doriți să vă delogați?</p>
+        <div className="flex justify-center gap-3">
+          <button
+            onClick={() => {
+              signOut(auth)
+                .then(() => {
+                  localStorage.removeItem("loggedUser");
+                  setLoggedUser(null);
+                  toast.dismiss(t.id);
+                  toast.success("V-ați delogat cu succes!");
+                })
+                .catch(() => toast.error("A apărut o eroare la delogare."));
+            }}
+            className="bg-red-600 hover:bg-red-700 text-white px-4 py-1 rounded-lg transition"
+          >
+            Da
+          </button>
+          <button
+            onClick={() => toast.dismiss(t.id)}
+            className="bg-gray-300 hover:bg-gray-400 text-black px-4 py-1 rounded-lg transition"
+          >
+            Nu
+          </button>
         </div>
-      ),
-      { duration: 4000 }
-    );
+      </div>
+    ));
   };
 
-  // Room Count
   const countRooms = (floors, types) => {
     let count = 0;
     floors?.forEach((floor) => {
@@ -92,15 +88,13 @@ const ProjectList = () => {
 
   if (loading) return <SpinnerOverlay />;
 
+  // Layout mode: one project => center
   const singleProject = projects.length === 1;
 
   return (
-    <div className="min-h-screen flex flex-col bg-white">
-      {/* Top Band */}
-      <div
-        className="w-full h-12 flex justify-between items-center px-6 text-sm text-white shadow-md"
-        style={{ backgroundColor: "#3D3B3B" }}
-      >
+    <div className="min-h-screen flex flex-col">
+      {/* Top band */}
+      <div className="w-full h-12 flex justify-between items-center px-6 text-sm text-white shadow-md bg-[#3D3B3B]">
         <div className="flex items-center gap-2">
           {loggedUser && (
             <span className="font-semibold text-white">
@@ -139,20 +133,16 @@ const ProjectList = () => {
         <h1 className="text-3xl font-bold text-gray-800">{category}</h1>
       </div>
 
-      {/* Main content area */}
+      {/* Content */}
       <div
-        className={`flex ${
-          singleProject
-            ? "justify-center items-start flex-wrap"
-            : "flex-col lg:flex-row justify-center"
-        } gap-6 mt-8 px-6 pb-10 flex-grow`}
+        className={`flex-grow flex flex-col lg:flex-row justify-center items-start gap-6 mt-8 px-6 pb-10 ${
+          singleProject ? "items-center" : ""
+        }`}
       >
         {/* Left: Project Cards */}
         <div
-          className={`${
-            singleProject
-              ? "w-full md:w-1/2"
-              : "flex-1 grid grid-cols-1 sm:grid-cols-2 gap-6"
+          className={`grid gap-6 ${
+            singleProject ? "grid-cols-1 w-full max-w-xl" : "grid-cols-1 sm:grid-cols-2 flex-1"
           }`}
         >
           {projects.length === 0 ? (
@@ -160,126 +150,25 @@ const ProjectList = () => {
               Nu există proiecte în această categorie.
             </p>
           ) : (
-            projects.map((project) => {
-              const bedrooms = countRooms(project.floors, [
-                "Dormitor",
-                "Dormitor matrimonial",
-              ]);
-              const bathrooms = countRooms(project.floors, [
-                "Baie",
-                "Baie matrimoniala",
-                "Grup sanitar",
-              ]);
-              const offices = countRooms(project.floors, ["Birou"]);
-              const garages = countRooms(project.floors, ["Garaj"]);
-
-              const [currentImage, setCurrentImage] = useState(0);
-              const [isHovered, setIsHovered] = useState(false);
-
-              useEffect(() => {
-                if (isHovered && project.images?.length > 1) {
-                  const interval = setInterval(() => {
-                    setCurrentImage(
-                      (prev) => (prev + 1) % project.images.length
-                    );
-                  }, 2000);
-                  return () => clearInterval(interval);
-                }
-              }, [isHovered, project.images]);
-
-              return (
-                <div
-                  key={project.id}
-                  className="bg-gray-100 rounded-lg shadow-lg overflow-hidden hover:shadow-2xl transition-shadow duration-300 flex flex-col sm:flex-row transform hover:scale-[1.01]"
-                >
-                  {/* Image slideshow */}
-                  <div
-                    className="relative sm:w-1/2 w-full"
-                    onMouseEnter={() => setIsHovered(true)}
-                    onMouseLeave={() => setIsHovered(false)}
-                  >
-                    <img
-                      src={project.images?.[currentImage]}
-                      alt={project.name}
-                      className="w-full h-56 object-cover rounded-l-lg transition-opacity duration-500 opacity-0"
-                      onLoad={(e) => e.target.classList.remove("opacity-0")}
-                      loading="lazy"
-                    />
-                  </div>
-
-                  {/* Project info */}
-                  <div className="flex flex-col justify-between p-4 sm:w-1/2 w-full">
-                    <div>
-                      <div className="flex justify-between items-center mb-2">
-                        <h2 className="text-xl font-semibold text-gray-800">
-                          {project.name}
-                        </h2>
-                        <div className="bg-gray-700 text-white px-3 py-1 rounded-lg flex items-center gap-1">
-                          <span>{project.price}</span>
-                          <Euro size={14} />
-                        </div>
-                      </div>
-
-                      <div className="space-y-2 text-gray-700">
-                        {bedrooms > 0 && (
-                          <div className="flex items-center gap-2">
-                            <Bed className="text-gray-700" size={18} />
-                            <span>{bedrooms}</span>
-                          </div>
-                        )}
-
-                        {offices > 0 && (
-                          <div className="flex items-center gap-2">
-                            <Laptop className="text-gray-700" size={18} />
-                            <span>{offices}</span>
-                          </div>
-                        )}
-
-                        {bathrooms > 0 && (
-                          <div className="flex items-center gap-2">
-                            <Bath className="text-gray-700" size={18} />
-                            <span>{bathrooms}</span>
-                          </div>
-                        )}
-
-                        {garages > 0 && (
-                          <div className="flex items-center gap-2">
-                            <Car className="text-gray-700" size={18} />
-                            <span>{garages}</span>
-                          </div>
-                        )}
-
-                        <div className="flex items-center gap-2">
-                          <Home className="text-gray-700" size={18} />
-                          <span>{project.usableMP}</span>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              );
-            })
+            projects.map((project) => (
+              <ProjectCard key={project.id} project={project} countRooms={countRooms} />
+            ))
           )}
         </div>
 
         {/* Right: Filters */}
-        {(!singleProject || projects.length === 0) && (
-          <div className="lg:w-1/3 w-full bg-gray-100 rounded-lg shadow-lg p-6 h-fit">
-            <h2 className="text-xl font-semibold text-gray-800 mb-4">
-              Filtre
-            </h2>
-            <p className="text-gray-500 italic">
-              Filtrele vor fi adăugate în curând...
-            </p>
-          </div>
-        )}
+        <div
+          className={`${
+            singleProject ? "w-full max-w-xl" : "lg:w-1/3 w-full"
+          } bg-gray-100 rounded-lg shadow-lg p-6 h-fit`}
+        >
+          <h2 className="text-xl font-semibold text-gray-800 mb-4">Filtre</h2>
+          <p className="text-gray-500 italic">Filtrele vor fi adăugate în curând...</p>
+        </div>
       </div>
 
-      {/* Bottom Band */}
-      <footer
-        className="w-full h-10 flex justify-end items-center px-6 text-sm text-white shadow-md mt-auto"
-        style={{ backgroundColor: "#3D3B3B" }}
-      >
+      {/* Bottom band */}
+      <footer className="w-full h-10 flex justify-end items-center px-6 text-sm text-white shadow-md mt-auto bg-[#3D3B3B]">
         <div className="flex items-center gap-6">
           <div className="flex items-center gap-2">
             <Phone size={16} />
