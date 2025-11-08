@@ -64,7 +64,7 @@ const MainPage = () => {
     <div className="min-h-screen flex flex-col bg-white">
       {/* Top band */}
       <div
-        className="fixed w-full h-12 flex justify-between items-center px-6 text-sm text-white shadow-md"
+        className="fixed w-full h-12 flex justify-between items-center px-6 text-sm text-white shadow-md z-10"
         style={{ backgroundColor: "#3D3B3B" }}
       >
         {/* Left side: logged-in user */}
