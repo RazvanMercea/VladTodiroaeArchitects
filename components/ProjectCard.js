@@ -26,19 +26,20 @@ const ProjectCard = ({ project, countRooms }) => {
     }
   }, [isHovered, project.images]);
 
-  const bedrooms = countRooms(project.floors, ["Dormitor", "Dormitor matrimonial"]);
-  const bathrooms = countRooms(project.floors, ["Baie", "Baie matrimoniala", "Grup sanitar"]);
-  const offices = countRooms(project.floors, ["Birou"]);
-  const garages = countRooms(project.floors, ["Garaj"]);
+  // ✅ Folosim doar types, nu mai trimitem floors
+  const bedrooms = countRooms(["Dormitor", "Dormitor matrimonial"]);
+  const bathrooms = countRooms(["Baie", "Baie matrimoniala", "Grup sanitar"]);
+  const offices = countRooms(["Birou"]);
+  const garages = countRooms(["Garaj"]);
 
   return (
     <div
       onClick={() => {
-        // store full project in sessionStorage
+        // stocăm proiectul complet în sessionStorage
         sessionStorage.setItem("selectedProject", JSON.stringify(project));
         router.push({
           pathname: "/project-details",
-          query: { title: project.name }, // optional for URL
+          query: { title: project.name }, // pentru URL
         });
       }}
       className="cursor-pointer bg-gray-100 rounded-lg shadow-lg overflow-hidden hover:shadow-2xl transition-transform duration-300 flex flex-col sm:flex-row hover:scale-[1.01]"
@@ -99,7 +100,7 @@ const ProjectCard = ({ project, countRooms }) => {
             )}
             <div className="flex items-center gap-2">
               <Home className="text-[#3D3B3B]" size={18} />
-              <span>{project.usableMP} metri pătrați</span>
+              <span>{project.usableMP} m²</span>
             </div>
           </div>
         </div>

@@ -29,19 +29,47 @@ const ProjectDetail = () => {
   const [loadingSimilar, setLoadingSimilar] = useState(true);
 
   useEffect(() => {
-    const storedProject = sessionStorage.getItem("selectedProject");
-    if (storedProject) {
-      const parsed = JSON.parse(storedProject);
-      setProject(parsed);
-      setLoading(false);
-      fetchSimilarProjects(parsed.category, parsed.name);
-    } else {
-      router.push("/");
-    }
-
     const storedUser = localStorage.getItem("loggedUser");
     if (storedUser) setLoggedUser(JSON.parse(storedUser));
   }, []);
+
+  useEffect(() => {
+    const fetchProjectByTitle = async (projectTitle) => {
+      if (!projectTitle) return;
+      try {
+        const querySnapshot = await getDocs(collection(db, "projects"));
+        const projectData = querySnapshot.docs
+          .map((doc) => ({ id: doc.id, ...doc.data() }))
+          .find((p) => p.name === projectTitle);
+
+        if (projectData) {
+          setProject(projectData);
+          fetchSimilarProjects(projectData.category, projectData.name);
+        } else {
+          router.push("/");
+        }
+      } catch (error) {
+        console.error("Error fetching project:", error);
+        router.push("/");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    if (title) {
+      fetchProjectByTitle(title);
+    } else {
+      const storedProject = sessionStorage.getItem("selectedProject");
+      if (storedProject) {
+        const parsed = JSON.parse(storedProject);
+        setProject(parsed);
+        fetchSimilarProjects(parsed.category, parsed.name);
+        setLoading(false);
+      } else {
+        router.push("/");
+      }
+    }
+  }, [title]);
 
   const fetchSimilarProjects = async (category, currentName) => {
     try {
@@ -480,37 +508,27 @@ const ProjectDetail = () => {
 
         {/* Proiecte similare */}
         <div className="mt-10">
-        <div className="bg-[#3D3B3B] text-white px-6 py-3 rounded-t-lg text-2xl font-semibold shadow-lg">
-            Proiecte similare
-        </div>
-        <div className="bg-gray-100 rounded-b-lg shadow-lg p-6">
+          <div className="bg-[#3D3B3B] text-white px-6 py-3 rounded-t-lg text-2xl font-semibold shadow-lg">Proiecte similare</div>
+          <div className="bg-gray-100 rounded-b-lg shadow-lg p-6">
             {loadingSimilar ? (
-            <SpinnerOverlay />
+              <SpinnerOverlay />
             ) : similarProjects.length === 0 ? (
-            <p className="text-gray-700 text-center py-10">
-                Nu există alte proiecte similare în această categorie.
-            </p>
+              <p className="text-gray-700 text-center py-10">Nu există alte proiecte similare în această categorie.</p>
             ) : (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
                 {similarProjects.map((p) => (
-                <ProjectCard
+                  <ProjectCard
                     key={p.id}
                     project={p}
-                    // Funcție „wrapper” pentru a calcula camerele corect pentru fiecare proiect
-                    countRooms={(types) => {
-                    if (!p.floors) return 0;
-                    return p.floors.reduce((acc, floor) => {
-                        floor.rooms?.forEach((r) => {
-                        if (types.includes(r.roomType)) acc++;
-                        });
-                        return acc;
-                    }, 0);
-                    }}
-                />
+                    countRooms={(types) => p.floors?.reduce((acc, floor) => {
+                      floor.rooms?.forEach((r) => { if (types.includes(r.roomType)) acc++; });
+                      return acc;
+                    }, 0)}
+                  />
                 ))}
-            </div>
+              </div>
             )}
-        </div>
+          </div>
         </div>
     </div>
 
