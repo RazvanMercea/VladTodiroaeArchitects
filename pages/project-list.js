@@ -3,7 +3,7 @@ import { useRouter } from "next/router";
 import { collection, getDocs, query, where } from "firebase/firestore";
 import { db, auth } from "@/lib/firebase";
 import SpinnerOverlay from "@/components/SpinnerOverlay";
-import { Phone, Mail } from "lucide-react";
+import { Phone, Mail, X } from "lucide-react";
 import { signOut } from "firebase/auth";
 import ProjectCard from "@/components/ProjectCard";
 import { CATEGORIES } from "@/lib/constants";
@@ -342,7 +342,7 @@ const ProjectList = () => {
       )}
 
       {/* Bottom band */}
-      <footer className="fixed w-full h-10 flex justify-end items-center px-6 text-sm text-white shadow-md bg-[#3D3B3B] bottom-0 z-10">
+      <footer className="fixed w-full h-10 flex justify-between items-center px-6 text-sm text-white shadow-md bg-[#3D3B3B] bottom-0 z-10">
         <button onClick={() => setShowContactForm(true)} className="text-white font-semibold hover:text-gray-300 transition">
           Contact
         </button>
