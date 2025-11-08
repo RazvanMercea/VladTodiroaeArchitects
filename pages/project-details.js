@@ -228,7 +228,8 @@ const ProjectDetail = () => {
                 <img
                   src={project.plans[expandedFloor]}
                   alt={`Plan ${expandedFloor}`}
-                  className="w-full h-auto object-cover rounded-lg"
+                  className="w-full h-auto object-cover rounded-lg cursor-pointer"
+                  onClick={() => setPreviewImage(project.plans[expandedFloor])}
                 />
               )}
             </div>
