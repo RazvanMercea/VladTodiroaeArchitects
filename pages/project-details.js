@@ -1,7 +1,5 @@
 import React, { useEffect, useState } from "react";
 import { useRouter } from "next/router";
-import { doc, getDoc } from "firebase/firestore";
-import { db } from "@/lib/firebase";
 import SpinnerOverlay from "@/components/SpinnerOverlay";
 import { Euro, Bed, Bath, Laptop, Car, Home } from "lucide-react";
 import { Range } from "react-range";
@@ -9,7 +7,7 @@ import { CATEGORIES } from "@/lib/constants";
 
 const ProjectDetail = () => {
   const router = useRouter();
-  const { projectId } = router.query;
+  const { title } = router.query; // optional, for URL display
 
   const [project, setProject] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -24,28 +22,16 @@ const ProjectDetail = () => {
     priceRange: [250, 10000],
   });
 
+  // Get project from sessionStorage
   useEffect(() => {
-    if (!projectId) return;
-
-    const fetchProject = async () => {
-      setLoading(true);
-      try {
-        const docRef = doc(db, "projects", projectId);
-        const docSnap = await getDoc(docRef);
-        if (docSnap.exists()) {
-          setProject(docSnap.data());
-        } else {
-          router.push("/"); // proiect inexistent
-        }
-      } catch (err) {
-        console.error("Error fetching project:", err);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchProject();
-  }, [projectId]);
+    const storedProject = sessionStorage.getItem("selectedProject");
+    if (storedProject) {
+      setProject(JSON.parse(storedProject));
+      setLoading(false);
+    } else {
+      router.push("/"); // fallback dacă nu există proiectul în sessionStorage
+    }
+  }, []);
 
   if (loading || !project) return <SpinnerOverlay />;
 

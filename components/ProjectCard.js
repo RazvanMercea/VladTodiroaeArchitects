@@ -33,7 +33,14 @@ const ProjectCard = ({ project, countRooms }) => {
 
   return (
     <div
-      onClick={() => router.push(`/project-detail/${project.id}`)}
+      onClick={() => {
+        // store full project in sessionStorage
+        sessionStorage.setItem("selectedProject", JSON.stringify(project));
+        router.push({
+          pathname: "/project-details",
+          query: { title: project.name }, // optional for URL
+        });
+      }}
       className="cursor-pointer bg-gray-100 rounded-lg shadow-lg overflow-hidden hover:shadow-2xl transition-transform duration-300 flex flex-col sm:flex-row hover:scale-[1.01]"
     >
       <div
