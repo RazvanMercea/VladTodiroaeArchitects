@@ -26,13 +26,11 @@ const ProjectList = () => {
     priceRange: [250, 10000],
   });
 
-  // Load logged user
   useEffect(() => {
     const storedUser = localStorage.getItem("loggedUser");
     if (storedUser) setLoggedUser(JSON.parse(storedUser));
   }, []);
 
-  // Set filters from query
   useEffect(() => {
     if (!category) return;
     const initialFilters = { ...filters };
@@ -84,16 +82,6 @@ const ProjectList = () => {
 
     fetchProjects();
   }, [category]);
-
-  const countRooms = (floors, types) => {
-    let count = 0;
-    floors?.forEach((floor) =>
-      floor.rooms?.forEach((r) => {
-        if (types.includes(r.roomType)) count++;
-      })
-    );
-    return count;
-  };
 
   // Apply filters manually only
   const applyFilters = () => {
@@ -203,7 +191,19 @@ const ProjectList = () => {
               </div>
             ) : (
               filteredProjects.map((project) => (
-                <ProjectCard key={project.id} project={project} countRooms={countRooms} />
+                <ProjectCard
+                    key={project.id}
+                    project={project}
+                    countRooms={(types) => {
+                        let total = 0;
+                        project.floors?.forEach(floor =>
+                        floor.rooms?.forEach(r => {
+                            if (types.includes(r.roomType)) total++;
+                        })
+                        );
+                        return total;
+                    }}
+                    />
               ))
             )}
           </div>
