@@ -23,7 +23,7 @@ export default async function handler(req, res) {
     });
 
     await transporter.sendMail({
-    from: `"${name}" <${process.env.YAHOO_EMAIL}>`,
+    from: process.env.YAHOO_EMAIL,
     replyTo: email,
     to: process.env.NEXT_PUBLIC_CONTACT_EMAIL,
     subject: `Mesaj de la ${name}`,

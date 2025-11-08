@@ -83,8 +83,9 @@ const MainPage = () => {
       toast.success("Mesajul a fost trimis cu succes!");
       setContactData({ name: "", email: "", message: "" });
       setShowContactForm(false);
-    } catch (err) {
-      toast.error(err.message || "Eroare la trimiterea mesajului.");
+    } catch (error) {
+      console.error("Nodemailer error:", error);
+      return res.status(500).json({ message: error.message || "Eroare la trimiterea emailului" });
     }
   };
 
