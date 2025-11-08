@@ -4,7 +4,6 @@ import { signOut } from "firebase/auth";
 import { Phone, Mail, X } from "lucide-react";
 import { useRouter } from "next/router";
 import toast, { Toaster } from "react-hot-toast";
-import { sendContactEmail } from "@/lib/email"; // our helper from previous discussion
 
 const CONTACT_PHONE = process.env.NEXT_PUBLIC_CONTACT_PHONE;
 const CONTACT_EMAIL = process.env.NEXT_PUBLIC_CONTACT_EMAIL;
@@ -63,17 +62,29 @@ const MainPage = () => {
 
   const handleContactSubmit = async (e) => {
     e.preventDefault();
+
     if (!contactData.name || !contactData.email || !contactData.message) {
       toast.error("Vă rugăm să completați toate câmpurile.");
       return;
     }
+
     try {
-      await sendContactEmail(contactData);
+      const res = await fetch("/api/contact", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(contactData),
+      });
+
+      if (!res.ok) {
+        const data = await res.json();
+        throw new Error(data.message || "Eroare la trimiterea emailului");
+      }
+
       toast.success("Mesajul a fost trimis cu succes!");
       setContactData({ name: "", email: "", message: "" });
       setShowContactForm(false);
     } catch (err) {
-      toast.error("Eroare la trimiterea mesajului. Încercați din nou.");
+      toast.error(err.message || "Eroare la trimiterea mesajului.");
     }
   };
 
@@ -82,25 +93,16 @@ const MainPage = () => {
       <Toaster position="top-right" />
 
       {/* Top band */}
-      <div
-        className="fixed w-full h-12 flex justify-between items-center px-6 text-sm text-white shadow-md z-10"
-        style={{ backgroundColor: "#3D3B3B" }}
-      >
+      <div className="fixed w-full h-12 flex justify-between items-center px-6 text-sm text-white shadow-md z-10" style={{ backgroundColor: "#3D3B3B" }}>
         <div className="flex items-center gap-2">
           {loggedUser && <span className="font-semibold text-white">Conectat ca: {loggedUser.email}</span>}
         </div>
         <div className="flex items-center gap-4">
-          <button onClick={() => router.push("/")} className="text-white font-semibold hover:text-gray-300 transition">
-            Home
-          </button>
+          <button onClick={() => router.push("/")} className="text-white font-semibold hover:text-gray-300 transition">Home</button>
           {!loggedUser ? (
-            <button onClick={() => router.push("/login")} className="text-white font-semibold hover:text-gray-300 transition">
-              Login
-            </button>
+            <button onClick={() => router.push("/login")} className="text-white font-semibold hover:text-gray-300 transition">Login</button>
           ) : (
-            <button onClick={handleLogout} className="text-white font-semibold hover:text-gray-300 transition">
-              Logout
-            </button>
+            <button onClick={handleLogout} className="text-white font-semibold hover:text-gray-300 transition">Logout</button>
           )}
         </div>
       </div>
@@ -150,10 +152,7 @@ const MainPage = () => {
       {showContactForm && (
         <div className="fixed inset-0 bg-black/50 flex justify-center items-center z-50">
           <div className="bg-white rounded-xl w-full max-w-md p-6 relative shadow-lg">
-            <button
-              onClick={() => setShowContactForm(false)}
-              className="absolute top-3 right-3 text-gray-600 hover:text-gray-900"
-            >
+            <button onClick={() => setShowContactForm(false)} className="absolute top-3 right-3 text-gray-600 hover:text-gray-900">
               <X size={20} />
             </button>
             <h2 className="text-2xl font-semibold mb-4 text-gray-800">Contact</h2>
@@ -178,10 +177,7 @@ const MainPage = () => {
                 onChange={(e) => setContactData({ ...contactData, message: e.target.value })}
                 className="border rounded-lg p-2 focus:outline-none focus:ring-2 focus:ring-gray-700 resize-none h-32"
               />
-              <button
-                type="submit"
-                className="bg-[#3D3B3B] hover:bg-gray-800 text-white font-semibold py-2 rounded-lg transition"
-              >
+              <button type="submit" className="bg-[#3D3B3B] hover:bg-gray-800 text-white font-semibold py-2 rounded-lg transition">
                 Solicitați Informațiile
               </button>
             </form>
@@ -190,14 +186,8 @@ const MainPage = () => {
       )}
 
       {/* Bottom Band */}
-      <footer
-        className="fixed bottom-0 left-0 w-full h-10 flex justify-between items-center px-6 text-sm text-white shadow-md"
-        style={{ backgroundColor: "#3D3B3B" }}
-      >
-        <button
-          onClick={() => setShowContactForm(true)}
-          className="text-white font-semibold hover:text-gray-300 transition"
-        >
+      <footer className="fixed bottom-0 left-0 w-full h-10 flex justify-between items-center px-6 text-sm text-white shadow-md" style={{ backgroundColor: "#3D3B3B" }}>
+        <button onClick={() => setShowContactForm(true)} className="text-white font-semibold hover:text-gray-300 transition">
           Contact
         </button>
 
