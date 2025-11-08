@@ -13,7 +13,6 @@ import { Range } from "react-range";
 const ProjectList = () => {
   const router = useRouter();
   const { category, bedrooms: qBedrooms, bathrooms: qBathrooms, hasGarage: qHasGarage, maxMP: qMaxMP, priceMin, priceMax } = router.query;
-
   const [projects, setProjects] = useState([]);
   const [filteredProjects, setFilteredProjects] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -25,6 +24,8 @@ const ProjectList = () => {
     maxMP: "",
     priceRange: [250, 10000],
   });
+  const [showContactForm, setShowContactForm] = useState(false);
+  const [contactData, setContactData] = useState({ name: "", email: "", message: "" });
 
   useEffect(() => {
     const storedUser = localStorage.getItem("loggedUser");
@@ -108,8 +109,6 @@ const ProjectList = () => {
   setFilteredProjects(result);
 };
 
-
-  // Trigger filter button
   const handleFilterButton = () => {
     applyFilters();
     router.push({
@@ -161,8 +160,38 @@ const ProjectList = () => {
 
   const singleProject = filteredProjects.length === 1;
 
+  const handleContactSubmit = async (e) => {
+    e.preventDefault();
+
+    if (!contactData.name || !contactData.email || !contactData.message) {
+      toast.error("Vă rugăm să completați toate câmpurile.");
+      return;
+    }
+
+    try {
+      const res = await fetch("/api/contact", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(contactData),
+      });
+
+      if (!res.ok) {
+        const data = await res.json();
+        throw new Error(data.message || "Eroare la trimiterea emailului");
+      }
+
+      toast.success("Mesajul a fost trimis cu succes!");
+      setContactData({ name: "", email: "", message: "" });
+      setShowContactForm(false);
+    } catch (err) {
+      toast.error(err.message || "Eroare la trimiterea mesajului.");
+    }
+  };
+
   return (
     <div className="min-h-screen flex flex-col">
+      <Toaster position="top-right" />
+
       {/* Top band */}
       <div className="fixed w-full h-12 flex justify-between items-center px-6 text-sm text-white shadow-md bg-[#3D3B3B] z-10">
         <div>
@@ -275,8 +304,48 @@ const ProjectList = () => {
         </div>
       </div>
 
-      {/* Footer */}
+      {/* Contact popup overlay */}
+      {showContactForm && (
+        <div className="fixed inset-0 bg-black/50 flex justify-center items-center z-50">
+          <div className="bg-white rounded-xl w-full max-w-md p-6 relative shadow-lg">
+            <button onClick={() => setShowContactForm(false)} className="absolute top-3 right-3 text-gray-600 hover:text-gray-900">
+              <X size={20} />
+            </button>
+            <h2 className="text-2xl font-semibold mb-4 text-gray-800">Contact</h2>
+            <form onSubmit={handleContactSubmit} className="flex flex-col gap-4">
+              <input
+                type="text"
+                placeholder="Nume Prenume"
+                value={contactData.name}
+                onChange={(e) => setContactData({ ...contactData, name: e.target.value })}
+                className="border rounded-lg p-2 focus:outline-none focus:ring-2 focus:ring-gray-700"
+              />
+              <input
+                type="email"
+                placeholder="Adresă de email"
+                value={contactData.email}
+                onChange={(e) => setContactData({ ...contactData, email: e.target.value })}
+                className="border rounded-lg p-2 focus:outline-none focus:ring-2 focus:ring-gray-700"
+              />
+              <textarea
+                placeholder="Mesajul Dumneavoastră"
+                value={contactData.message}
+                onChange={(e) => setContactData({ ...contactData, message: e.target.value })}
+                className="border rounded-lg p-2 focus:outline-none focus:ring-2 focus:ring-gray-700 resize-none h-32"
+              />
+              <button type="submit" className="bg-[#3D3B3B] hover:bg-gray-800 text-white font-semibold py-2 rounded-lg transition">
+                Solicitați Informațiile
+              </button>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* Bottom band */}
       <footer className="fixed w-full h-10 flex justify-end items-center px-6 text-sm text-white shadow-md bg-[#3D3B3B] bottom-0 z-10">
+        <button onClick={() => setShowContactForm(true)} className="text-white font-semibold hover:text-gray-300 transition">
+          Contact
+        </button>
         <div className="flex items-center gap-6">
           <div className="flex items-center gap-2">
             <Phone size={16} />
