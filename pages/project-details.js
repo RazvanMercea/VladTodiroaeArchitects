@@ -479,27 +479,40 @@ const ProjectDetail = () => {
         </div>
 
         {/* Proiecte similare */}
-            <div className="mt-10">
-              <div className="bg-[#3D3B3B] text-white px-6 py-3 rounded-t-lg text-2xl font-semibold shadow-lg">
-                Proiecte similare
-              </div>
-              <div className="bg-gray-100 rounded-b-lg shadow-lg p-6">
-                {loadingSimilar ? (
-                  <SpinnerOverlay />
-                ) : similarProjects.length === 0 ? (
-                  <p className="text-gray-700 text-center py-10">
-                    Nu există alte proiecte similare în această categorie.
-                  </p>
-                ) : (
-                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-                    {similarProjects.map((p) => (
-                      <ProjectCard key={p.id} project={p} countRooms={countRooms}/>
-                    ))}
-                  </div>
-                )}
-              </div>
+        <div className="mt-10">
+        <div className="bg-[#3D3B3B] text-white px-6 py-3 rounded-t-lg text-2xl font-semibold shadow-lg">
+            Proiecte similare
+        </div>
+        <div className="bg-gray-100 rounded-b-lg shadow-lg p-6">
+            {loadingSimilar ? (
+            <SpinnerOverlay />
+            ) : similarProjects.length === 0 ? (
+            <p className="text-gray-700 text-center py-10">
+                Nu există alte proiecte similare în această categorie.
+            </p>
+            ) : (
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                {similarProjects.map((p) => (
+                <ProjectCard
+                    key={p.id}
+                    project={p}
+                    // Funcție „wrapper” pentru a calcula camerele corect pentru fiecare proiect
+                    countRooms={(types) => {
+                    if (!p.floors) return 0;
+                    return p.floors.reduce((acc, floor) => {
+                        floor.rooms?.forEach((r) => {
+                        if (types.includes(r.roomType)) acc++;
+                        });
+                        return acc;
+                    }, 0);
+                    }}
+                />
+                ))}
             </div>
-      </div>
+            )}
+        </div>
+        </div>
+    </div>
 
       {/* Preview */}
       {previewImage && (
