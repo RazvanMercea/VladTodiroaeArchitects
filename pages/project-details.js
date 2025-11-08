@@ -1,9 +1,12 @@
 import React, { useEffect, useState } from "react";
 import { useRouter } from "next/router";
 import SpinnerOverlay from "@/components/SpinnerOverlay";
+import ProjectCard from "@/components/ProjectCard";
 import { Euro, Bed, Bath, Laptop, Car, Home, Phone, Mail } from "lucide-react";
 import { Range } from "react-range";
 import { CATEGORIES } from "@/lib/constants";
+import { collection, getDocs } from "firebase/firestore";
+import { db } from "@/lib/firebase";
 
 const ProjectDetail = () => {
   const router = useRouter();
@@ -22,12 +25,16 @@ const ProjectDetail = () => {
     priceRange: [250, 10000],
   });
   const [loggedUser, setLoggedUser] = useState(null);
+  const [similarProjects, setSimilarProjects] = useState([]);
+  const [loadingSimilar, setLoadingSimilar] = useState(true);
 
   useEffect(() => {
     const storedProject = sessionStorage.getItem("selectedProject");
     if (storedProject) {
-      setProject(JSON.parse(storedProject));
+      const parsed = JSON.parse(storedProject);
+      setProject(parsed);
       setLoading(false);
+      fetchSimilarProjects(parsed.category, parsed.name);
     } else {
       router.push("/");
     }
@@ -35,6 +42,32 @@ const ProjectDetail = () => {
     const storedUser = localStorage.getItem("loggedUser");
     if (storedUser) setLoggedUser(JSON.parse(storedUser));
   }, []);
+
+  const fetchSimilarProjects = async (category, currentName) => {
+    try {
+      setLoadingSimilar(true);
+      const querySnapshot = await getDocs(collection(db, "projects"));
+      const allProjects = querySnapshot.docs.map((doc) => ({
+        id: doc.id,
+        ...doc.data(),
+      }));
+
+      const filtered = allProjects
+        .filter(
+          (p) =>
+            p.category === category &&
+            p.name !== currentName &&
+            p.images?.length > 0
+        )
+        .slice(0, 6);
+
+      setSimilarProjects(filtered);
+    } catch (error) {
+      console.error("Error fetching similar projects:", error);
+    } finally {
+      setLoadingSimilar(false);
+    }
+  };
 
   if (loading || !project) return <SpinnerOverlay />;
 
@@ -72,7 +105,7 @@ const ProjectDetail = () => {
 
   return (
     <div className="min-h-screen flex flex-col">
-      {/* ✅ Top Band (aligned with ProjectList) */}
+      {/* Top Band */}
       <div className="fixed w-full h-12 flex justify-between items-center px-6 text-sm text-white shadow-md bg-[#3D3B3B] z-10">
         <div>
           {loggedUser && (
@@ -106,38 +139,39 @@ const ProjectDetail = () => {
         </div>
       </div>
 
-      {/* ✅ Title + Breadcrumb */}
+      {/* Title + Breadcrumb */}
       <div className="mt-16 px-6">
-        <div className="flex flex-col lg:flex-row justify-between items-start max-w-[1200px] mx-auto gap-4">
-          <div className="flex-1">
-            <h1 className="text-3xl font-bold text-gray-800">{project.name}</h1>
-            {/* Breadcrumb */}
-            <div className="text-sm text-gray-600 mt-2 underline">
-              <span
-                className="cursor-pointer hover:text-gray-800"
-                onClick={() => router.push("/")}
-              >
-                Home
-              </span>{" "}
-              &gt;{" "}
-              <span
-                className="cursor-pointer hover:text-gray-800"
-                onClick={() =>
-                  router.push(
-                    `/project-list?category=${encodeURIComponent(
-                      project.category
-                    )}`
-                  )
-                }
-              >
-                {project.category}
-              </span>{" "}
-              &gt; <span className="text-gray-800">{project.name}</span>
+        <div className="flex justify-center">
+          <div className="w-full max-w-[1200px] bg-gray-100 rounded-lg shadow-md p-6 flex flex-col lg:flex-row justify-between items-start gap-4 border border-gray-300">
+            <div className="flex-1">
+              <h1 className="text-3xl font-bold text-gray-800">{project.name}</h1>
+              <div className="text-sm text-gray-600 mt-2 underline">
+                <span
+                  className="cursor-pointer hover:text-gray-800"
+                  onClick={() => router.push("/")}
+                >
+                  Home
+                </span>{" "}
+                &gt;{" "}
+                <span
+                  className="cursor-pointer hover:text-gray-800"
+                  onClick={() =>
+                    router.push(
+                      `/project-list?category=${encodeURIComponent(
+                        project.category
+                      )}`
+                    )
+                  }
+                >
+                  {project.category}
+                </span>{" "}
+                &gt; <span className="text-gray-800">{project.name}</span>
+              </div>
             </div>
-          </div>
-          <div className="bg-[#3D3B3B] text-white px-6 py-4 rounded-lg shadow-lg flex items-center justify-center text-3xl font-bold">
-            <span>{project.price}</span>
-            <Euro size={24} className="ml-2" />
+            <div className="bg-[#3D3B3B] text-white px-6 py-4 rounded-lg shadow-lg flex items-center justify-center text-3xl font-bold">
+              <span>{project.price}</span>
+              <Euro size={24} className="ml-2" />
+            </div>
           </div>
         </div>
       </div>
@@ -147,7 +181,7 @@ const ProjectDetail = () => {
         <div className="flex flex-col lg:flex-row gap-6 max-w-[1200px] mx-auto">
           {/* Left 2/3 */}
           <div className="lg:w-2/3 w-full flex flex-col gap-6">
-            {/* Image Carousel */}
+            {/* Carousel */}
             <div className="relative w-full h-96 bg-gray-100 rounded-lg overflow-hidden flex items-center justify-center">
               <img
                 src={project.images?.[currentImageIndex]}
@@ -184,7 +218,7 @@ const ProjectDetail = () => {
               )}
             </div>
 
-            {/* General Info */}
+            {/* Informatii generale */}
             <div className="p-6 bg-gray-100 rounded-lg shadow-md space-y-4">
               <h2 className="text-2xl font-semibold text-gray-800">
                 Informatii generale
@@ -303,9 +337,31 @@ const ProjectDetail = () => {
                 />
               )}
             </div>
+
+            {/* Proiecte similare */}
+            <div className="mt-10">
+              <div className="bg-[#3D3B3B] text-white px-6 py-3 rounded-t-lg text-2xl font-semibold shadow-lg">
+                Proiecte similare
+              </div>
+              <div className="bg-gray-100 rounded-b-lg shadow-lg p-6">
+                {loadingSimilar ? (
+                  <SpinnerOverlay />
+                ) : similarProjects.length === 0 ? (
+                  <p className="text-gray-700 text-center py-10">
+                    Nu există alte proiecte similare în această categorie.
+                  </p>
+                ) : (
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                    {similarProjects.map((p) => (
+                      <ProjectCard key={p.id} project={p} />
+                    ))}
+                  </div>
+                )}
+              </div>
+            </div>
           </div>
 
-          {/* Filters & Other Categories */}
+          {/* Sidebar */}
           <div className="lg:w-1/3 w-full flex flex-col gap-6">
             <div className="bg-gray-100 rounded-lg shadow-lg p-6 h-fit">
               <h2 className="text-xl font-semibold text-gray-800 mb-4">
@@ -445,7 +501,7 @@ const ProjectDetail = () => {
         </div>
       </div>
 
-      {/* Image Preview */}
+      {/* Preview */}
       {previewImage && (
         <div
           className="fixed inset-0 bg-black/70 flex items-center justify-center z-50"
