@@ -1,8 +1,10 @@
 import React, { useEffect, useState } from "react";
+import { useRouter } from "next/router";
 import { Bed, Bath, Home, Car, Laptop, Euro } from "lucide-react";
 import Lottie from "lottie-react";
 
 const ProjectCard = ({ project, countRooms }) => {
+  const router = useRouter();
   const [currentImage, setCurrentImage] = useState(0);
   const [isHovered, setIsHovered] = useState(false);
   const [imageLoaded, setImageLoaded] = useState(false);
@@ -30,7 +32,10 @@ const ProjectCard = ({ project, countRooms }) => {
   const garages = countRooms(project.floors, ["Garaj"]);
 
   return (
-    <div className="bg-gray-100 rounded-lg shadow-lg overflow-hidden hover:shadow-2xl transition-transform duration-300 flex flex-col sm:flex-row hover:scale-[1.01]">
+    <div
+      onClick={() => router.push(`/project-detail/${project.id}`)}
+      className="cursor-pointer bg-gray-100 rounded-lg shadow-lg overflow-hidden hover:shadow-2xl transition-transform duration-300 flex flex-col sm:flex-row hover:scale-[1.01]"
+    >
       <div
         className="relative sm:w-1/2 w-full h-56"
         onMouseEnter={() => setIsHovered(true)}

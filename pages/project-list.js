@@ -26,11 +26,13 @@ const ProjectList = () => {
     priceRange: [250, 10000],
   });
 
+  // Load logged user
   useEffect(() => {
     const storedUser = localStorage.getItem("loggedUser");
     if (storedUser) setLoggedUser(JSON.parse(storedUser));
   }, []);
 
+  // Set filters from query
   useEffect(() => {
     if (!category) return;
     const initialFilters = { ...filters };
@@ -44,6 +46,7 @@ const ProjectList = () => {
     setFilters(initialFilters);
   }, [category, qBedrooms, qBathrooms, qHasGarage, qMaxMP, priceMin, priceMax]);
 
+  // Fetch projects by category
   useEffect(() => {
     if (!category) return;
     setLoading(true);
@@ -71,7 +74,7 @@ const ProjectList = () => {
         );
 
         setProjects(projectList);
-        setFilteredProjects(projectList);
+        setFilteredProjects(projectList); // Initially show all
       } catch (error) {
         console.error("Error fetching projects:", error);
       } finally {
@@ -92,6 +95,7 @@ const ProjectList = () => {
     return count;
   };
 
+  // Apply filters manually only
   const applyFilters = () => {
     let result = [...projects];
     const { bedrooms, bathrooms, hasGarage, maxMP, priceRange } = filters;
@@ -107,10 +111,7 @@ const ProjectList = () => {
     setFilteredProjects(result);
   };
 
-  useEffect(() => {
-    if (projects.length > 0) applyFilters();
-  }, [projects, filters]);
-
+  // Trigger filter button
   const handleFilterButton = () => {
     applyFilters();
     router.push({
