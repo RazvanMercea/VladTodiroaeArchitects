@@ -1,13 +1,13 @@
 import React, { useEffect, useState } from "react";
 import { useRouter } from "next/router";
 import SpinnerOverlay from "@/components/SpinnerOverlay";
-import { Euro, Bed, Bath, Laptop, Car, Home } from "lucide-react";
+import { Euro, Bed, Bath, Laptop, Car, Home, Phone, Mail } from "lucide-react";
 import { Range } from "react-range";
 import { CATEGORIES } from "@/lib/constants";
 
 const ProjectDetail = () => {
   const router = useRouter();
-  const { title } = router.query; // optional, for URL display
+  const { title } = router.query;
 
   const [project, setProject] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -21,39 +21,38 @@ const ProjectDetail = () => {
     maxMP: "",
     priceRange: [250, 10000],
   });
+  const [loggedUser, setLoggedUser] = useState(null);
 
-  // Get project from sessionStorage
   useEffect(() => {
     const storedProject = sessionStorage.getItem("selectedProject");
     if (storedProject) {
       setProject(JSON.parse(storedProject));
       setLoading(false);
     } else {
-      router.push("/"); // fallback dacă nu există proiectul în sessionStorage
+      router.push("/");
     }
+
+    const storedUser = localStorage.getItem("loggedUser");
+    if (storedUser) setLoggedUser(JSON.parse(storedUser));
   }, []);
 
   if (loading || !project) return <SpinnerOverlay />;
 
-  // Count rooms utility
-  const countRooms = (typeArray) => {
-    return project.floors?.reduce((acc, floor) => {
+  const countRooms = (types) =>
+    project.floors?.reduce((acc, floor) => {
       floor.rooms?.forEach((r) => {
-        if (typeArray.includes(r.roomType)) acc++;
+        if (types.includes(r.roomType)) acc++;
       });
       return acc;
     }, 0);
-  };
 
   const bedrooms = countRooms(["Dormitor", "Dormitor matrimonial"]);
   const bathrooms = countRooms(["Baie", "Baie matrimoniala", "Grup sanitar"]);
   const offices = countRooms(["Birou"]);
   const garages = countRooms(["Garaj"]);
 
-  // Buton Căutați – redirecționează în project-list.js
   const handleFilterDetail = () => {
     const query = { category: project.category };
-
     if (filters.bedrooms) query.bedrooms = filters.bedrooms;
     if (filters.bathrooms) query.bathrooms = filters.bathrooms;
     if (filters.hasGarage) query.hasGarage = filters.hasGarage;
@@ -62,27 +61,43 @@ const ProjectDetail = () => {
       query.priceMin = filters.priceRange[0];
       query.priceMax = filters.priceRange[1];
     }
+    router.push({ pathname: "/project-list", query });
+  };
 
-    router.push({
-      pathname: "/project-list",
-      query,
-    });
+  const handleLogout = () => {
+    localStorage.removeItem("loggedUser");
+    setLoggedUser(null);
+    router.reload();
   };
 
   return (
     <div className="min-h-screen flex flex-col bg-white">
       {/* Top Band */}
       <div className="fixed w-full h-12 flex justify-between items-center px-6 text-sm text-white shadow-md bg-[#3D3B3B] z-10">
-        <div>
-          <button onClick={() => router.push("/")} className="hover:text-gray-300">
+        <div className="flex items-center gap-4">
+          {loggedUser && <span className="font-semibold">Conectat ca: {loggedUser.email}</span>}
+          <button onClick={() => router.push("/")} className="hover:text-gray-300 transition">
             Home
           </button>
         </div>
+        <div>
+          {!loggedUser ? (
+            <button onClick={() => router.push("/login")} className="hover:text-gray-300 transition">
+              Login
+            </button>
+          ) : (
+            <button onClick={handleLogout} className="hover:text-gray-300 transition">
+              Logout
+            </button>
+          )}
+        </div>
       </div>
 
-      {/* Title + Price */}
+      {/* Project Title + Price */}
       <div className="flex justify-between items-center mt-16 px-6 max-w-[1200px] mx-auto">
-        <h1 className="text-3xl font-bold text-gray-800">{project.name}</h1>
+        <div className="bg-gray-100 rounded-lg shadow-lg p-4 flex-1 mr-4">
+          <h1 className="text-3xl font-bold text-gray-800">{project.name}</h1>
+        </div>
         <div className="bg-[#3D3B3B] text-white px-4 py-2 rounded-lg shadow-lg flex items-center gap-1">
           <span>{project.price}</span>
           <Euro size={14} />
@@ -107,8 +122,8 @@ const ProjectDetail = () => {
 
       {/* Main Content */}
       <div className="flex flex-col lg:flex-row mt-6 px-6 max-w-[1200px] mx-auto gap-6">
-        {/* Left content - images + general info */}
-        <div className="flex-1 space-y-6">
+        {/* Left content - 2/3 */}
+        <div className="lg:w-2/3 w-full space-y-6">
           {/* Image Carousel */}
           <div className="relative w-full h-96 bg-gray-100 rounded-lg overflow-hidden flex items-center justify-center">
             <img
@@ -117,7 +132,6 @@ const ProjectDetail = () => {
               className="w-full h-full object-cover cursor-pointer"
               onClick={() => setPreviewImage(project.images[currentImageIndex])}
             />
-            {/* Arrows */}
             {project.images?.length > 1 && (
               <>
                 <button
@@ -179,6 +193,7 @@ const ProjectDetail = () => {
 
           {/* Compartimentare */}
           <div className="space-y-4">
+            <h2 className="text-2xl font-semibold text-gray-800">Compartimentare</h2>
             {project.floors?.map((floor, idx) => (
               <div key={idx} className="p-4 bg-gray-100 rounded-lg shadow-md">
                 <h3 className="text-xl font-semibold mb-2">{floor.type}</h3>
@@ -204,16 +219,18 @@ const ProjectDetail = () => {
 
           {/* Detalii suplimentare */}
           <div className="p-4 bg-gray-100 rounded-lg shadow-md space-y-2">
+            <h2 className="text-2xl font-semibold text-gray-800 mb-2">Detalii suplimentare</h2>
             <p>Metri pătrați totali: {project.totalMP} m<sup>2</sup></p>
             <p>Metri pătrați utili: {project.usableMP} m<sup>2</sup></p>
           </div>
 
           {/* Planuri de nivel */}
           <div className="space-y-2">
+            <h2 className="text-2xl font-semibold text-gray-800 mb-2">Planuri de nivel</h2>
             {project.floors?.map((floor, idx) => (
               <div key={idx}>
                 <button
-                  className="px-4 py-2 bg-[#3D3B3B] text-white rounded-lg"
+                  className="px-4 py-2 bg-[#3D3B3B] text-white rounded-lg mb-2"
                   onClick={() =>
                     setExpandedFloors((prev) => ({
                       ...prev,
@@ -235,7 +252,7 @@ const ProjectDetail = () => {
           </div>
         </div>
 
-        {/* Right content - Filters + Alte Categorii */}
+        {/* Right content - 1/3 */}
         <div className="lg:w-1/3 w-full space-y-6">
           {/* Filters */}
           <div className="bg-gray-100 rounded-lg shadow-lg p-6 h-fit">
@@ -248,9 +265,7 @@ const ProjectDetail = () => {
               className="w-full border rounded-lg p-2 mb-4"
             >
               <option value="">Toate</option>
-              {[1, 2, 3, 4, 5].map((n) => (
-                <option key={n} value={n}>{n}</option>
-              ))}
+              {[1,2,3,4,5].map(n => <option key={n} value={n}>{n}</option>)}
             </select>
 
             <label className="block mb-2 font-medium text-gray-700">Număr băi:</label>
@@ -260,9 +275,7 @@ const ProjectDetail = () => {
               className="w-full border rounded-lg p-2 mb-4"
             >
               <option value="">Toate</option>
-              {[1, 2, 3, 4, 5].map((n) => (
-                <option key={n} value={n}>{n}</option>
-              ))}
+              {[1,2,3,4,5].map(n => <option key={n} value={n}>{n}</option>)}
             </select>
 
             <label className="flex items-center gap-2 mb-4">
@@ -299,8 +312,8 @@ const ProjectDetail = () => {
                       position: "absolute",
                       height: "100%",
                       background: "#3D3B3B",
-                      left: `${((filters.priceRange[0] - 250) / (10000 - 250)) * 100}%`,
-                      width: `${((filters.priceRange[1] - filters.priceRange[0]) / (10000 - 250)) * 100}%`,
+                      left: `${((filters.priceRange[0]-250)/(10000-250))*100}%`,
+                      width: `${((filters.priceRange[1]-filters.priceRange[0])/(10000-250))*100}%`,
                     }}
                   />
                   {children}
@@ -323,12 +336,10 @@ const ProjectDetail = () => {
           <div className="bg-gray-100 rounded-lg shadow-lg p-6 h-fit">
             <h2 className="text-xl font-semibold text-gray-800 mb-4">Alte categorii</h2>
             <div className="space-y-3">
-              {CATEGORIES.filter((c) => c !== project.category).map((c) => (
+              {CATEGORIES.filter(c => c !== project.category).map(c => (
                 <button
                   key={c}
-                  onClick={() =>
-                    router.push(`/project-list?category=${encodeURIComponent(c)}`)
-                  }
+                  onClick={() => router.push(`/project-list?category=${encodeURIComponent(c)}`)}
                   className="block w-full text-left bg-[#3D3B3B] hover:bg-gray-800 text-white px-4 py-2 rounded-lg transition"
                 >
                   {c}
@@ -339,7 +350,7 @@ const ProjectDetail = () => {
         </div>
       </div>
 
-      {/* Image Preview Modal */}
+      {/* Image Preview */}
       {previewImage && (
         <div
           className="fixed inset-0 bg-black/70 flex items-center justify-center z-50"
@@ -352,6 +363,20 @@ const ProjectDetail = () => {
           />
         </div>
       )}
+
+      {/* Footer */}
+      <footer className="fixed w-full h-10 flex justify-end items-center px-6 text-sm text-white shadow-md bg-[#3D3B3B] bottom-0 z-10">
+        <div className="flex items-center gap-6">
+          <div className="flex items-center gap-2">
+            <Phone size={16} />
+            <span>{process.env.NEXT_PUBLIC_CONTACT_PHONE}</span>
+          </div>
+          <div className="flex items-center gap-2">
+            <Mail size={16} />
+            <span>{process.env.NEXT_PUBLIC_CONTACT_EMAIL}</span>
+          </div>
+        </div>
+      </footer>
     </div>
   );
 };
