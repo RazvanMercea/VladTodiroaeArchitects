@@ -83,21 +83,31 @@ const ProjectList = () => {
     fetchProjects();
   }, [category]);
 
-  // Apply filters manually only
   const applyFilters = () => {
-    let result = [...projects];
-    const { bedrooms, bathrooms, hasGarage, maxMP, priceRange } = filters;
+  let result = [...projects];
+  const { bedrooms, bathrooms, hasGarage, maxMP, priceRange } = filters;
 
-    if (bedrooms) result = result.filter(p => countRooms(p.floors, ["Dormitor", "Dormitor matrimonial"]) === Number(bedrooms));
-    if (bathrooms) result = result.filter(p => countRooms(p.floors, ["Baie", "Baie matrimoniala", "Grup sanitar"]) === Number(bathrooms));
-    if (hasGarage) result = result.filter(p => countRooms(p.floors, ["Garaj"]) > 0);
-    if (maxMP) result = result.filter(p => Number(p.usableMP) <= Number(maxMP));
-    if (priceRange[0] > 250 || priceRange[1] < 10000) {
-      result = result.filter(p => Number(p.price) >= priceRange[0] && Number(p.price) <= priceRange[1]);
-    }
-
-    setFilteredProjects(result);
+  const countRoomsLocal = (project, types) => {
+    let total = 0;
+    project.floors?.forEach(floor =>
+      floor.rooms?.forEach(r => {
+        if (types.includes(r.roomType)) total++;
+      })
+    );
+    return total;
   };
+
+  if (bedrooms) result = result.filter(p => countRoomsLocal(p, ["Dormitor", "Dormitor matrimonial"]) === Number(bedrooms));
+  if (bathrooms) result = result.filter(p => countRoomsLocal(p, ["Baie", "Baie matrimoniala", "Grup sanitar"]) === Number(bathrooms));
+  if (hasGarage) result = result.filter(p => countRoomsLocal(p, ["Garaj"]) > 0);
+  if (maxMP) result = result.filter(p => Number(p.usableMP) <= Number(maxMP));
+  if (priceRange[0] > 250 || priceRange[1] < 10000) {
+    result = result.filter(p => Number(p.price) >= priceRange[0] && Number(p.price) <= priceRange[1]);
+  }
+
+  setFilteredProjects(result);
+};
+
 
   // Trigger filter button
   const handleFilterButton = () => {
