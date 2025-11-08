@@ -13,7 +13,7 @@ const ProjectDetail = () => {
   const [loading, setLoading] = useState(true);
   const [previewImage, setPreviewImage] = useState(null);
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
-  const [expandedFloor, setExpandedFloor] = useState(null); // single expanded floor
+  const [expandedFloor, setExpandedFloor] = useState(""); // selected floor for plan dropdown
   const [filters, setFilters] = useState({
     bedrooms: "",
     bathrooms: "",
@@ -96,12 +96,12 @@ const ProjectDetail = () => {
       {/* Title + Price */}
       <div className="mt-16 px-6">
         <div className="flex flex-col lg:flex-row justify-between items-start max-w-[1200px] mx-auto gap-4">
-          <div className="bg-gray-100 rounded-lg shadow-lg p-4 flex-1">
+          <div className="bg-gray-100 rounded-lg shadow-lg p-4 flex-1 flex items-center">
             <h1 className="text-3xl font-bold text-gray-800">{project.name}</h1>
           </div>
-          <div className="bg-[#3D3B3B] text-white px-4 py-2 rounded-lg shadow-lg flex items-center gap-1">
+          <div className="bg-[#3D3B3B] text-white px-6 py-4 rounded-lg shadow-lg flex items-center justify-center text-3xl font-bold">
             <span>{project.price}</span>
-            <Euro size={14} />
+            <Euro size={24} className="ml-2" />
           </div>
         </div>
       </div>
@@ -178,29 +178,30 @@ const ProjectDetail = () => {
               </div>
             </div>
 
-            {/* Compartimentare - single rectangle */}
+            {/* Compartimentare */}
             <div className="p-6 bg-gray-100 rounded-lg shadow-md">
               <h2 className="text-2xl font-semibold text-gray-800 mb-4">Compartimentare</h2>
-              <table className="w-full text-gray-800 border-collapse border border-gray-300">
-                <thead className="bg-[#3D3B3B] text-white">
-                  <tr>
-                    <th className="border px-2 py-1 text-left">Etaj</th>
-                    <th className="border px-2 py-1 text-left">Tip cameră</th>
-                    <th className="border px-2 py-1 text-left">mp</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {project.floors?.map((floor, idx) =>
-                    floor.rooms?.map((room, rIdx) => (
-                      <tr key={`${idx}-${rIdx}`} className={rIdx % 2 === 0 ? "bg-gray-50" : "bg-gray-100"}>
-                        <td className="border px-2 py-1">{floor.type}</td>
-                        <td className="border px-2 py-1">{room.roomType}</td>
-                        <td className="border px-2 py-1">{room.mp} m<sup>2</sup></td>
+              {project.floors?.map((floor, idx) => (
+                <div key={idx} className="mb-4">
+                  <h3 className="text-xl font-semibold text-gray-700 mb-2">Etaj: {floor.type}</h3>
+                  <table className="w-full text-gray-800 border-collapse border border-gray-300">
+                    <thead className="bg-[#3D3B3B] text-white">
+                      <tr>
+                        <th className="border px-2 py-1 text-left">Tip cameră</th>
+                        <th className="border px-2 py-1 text-left">mp</th>
                       </tr>
-                    ))
-                  )}
-                </tbody>
-              </table>
+                    </thead>
+                    <tbody>
+                      {floor.rooms?.map((room, rIdx) => (
+                        <tr key={rIdx} className={rIdx % 2 === 0 ? "bg-gray-50" : "bg-gray-100"}>
+                          <td className="border px-2 py-1">{room.roomType}</td>
+                          <td className="border px-2 py-1">{room.mp} m<sup>2</sup></td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              ))}
             </div>
 
             {/* Detalii suplimentare */}
@@ -210,28 +211,26 @@ const ProjectDetail = () => {
               <p>Metri pătrați utili: {project.usableMP} m<sup>2</sup></p>
             </div>
 
-            {/* Planuri de nivel */}
-            <div className="space-y-2">
-              <h2 className="text-2xl font-semibold text-gray-800 mb-2">Planuri de nivel</h2>
-              {project.floors?.map((floor, idx) => (
-                <div key={idx} className="mb-2">
-                  <button
-                    className="px-4 py-2 bg-[#3D3B3B] text-white rounded-lg"
-                    onClick={() =>
-                      setExpandedFloor(expandedFloor === floor.type ? null : floor.type)
-                    }
-                  >
-                    {floor.type}
-                  </button>
-                  {expandedFloor === floor.type && project.plans?.[floor.type]?.url && (
-                    <img
-                      src={project.plans[floor.type].url}
-                      alt={`Plan ${floor.type}`}
-                      className="w-full h-auto object-cover rounded-lg mt-2"
-                    />
-                  )}
-                </div>
-              ))}
+            {/* Planuri de nivel - dropdown */}
+            <div className="p-6 bg-gray-100 rounded-lg shadow-md">
+              <h2 className="text-2xl font-semibold text-gray-800 mb-4">Planuri de nivel</h2>
+              <select
+                className="w-full border rounded-lg p-2 mb-4"
+                value={expandedFloor}
+                onChange={(e) => setExpandedFloor(e.target.value)}
+              >
+                <option value="">Selectați etajul</option>
+                {project.floors?.map((floor) => (
+                  <option key={floor.type} value={floor.type}>{floor.type}</option>
+                ))}
+              </select>
+              {expandedFloor && project.plans?.[expandedFloor] && (
+                <img
+                  src={project.plans[expandedFloor]}
+                  alt={`Plan ${expandedFloor}`}
+                  className="w-full h-auto object-cover rounded-lg"
+                />
+              )}
             </div>
           </div>
 
