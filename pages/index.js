@@ -1,9 +1,10 @@
 import React, { useState, useEffect } from "react";
 import { db, auth } from "@/lib/firebase";
 import { signOut } from "firebase/auth";
-import { Phone, Mail } from "lucide-react";
+import { Phone, Mail, X } from "lucide-react";
 import { useRouter } from "next/router";
-import toast from "react-hot-toast";
+import toast, { Toaster } from "react-hot-toast";
+import { sendContactEmail } from "@/lib/email"; // our helper from previous discussion
 
 const CONTACT_PHONE = process.env.NEXT_PUBLIC_CONTACT_PHONE;
 const CONTACT_EMAIL = process.env.NEXT_PUBLIC_CONTACT_EMAIL;
@@ -18,12 +19,12 @@ const CARD_DATA = [
 const MainPage = () => {
   const router = useRouter();
   const [loggedUser, setLoggedUser] = useState(null);
+  const [showContactForm, setShowContactForm] = useState(false);
+  const [contactData, setContactData] = useState({ name: "", email: "", message: "" });
 
   useEffect(() => {
     const storedUser = localStorage.getItem("loggedUser");
-    if (storedUser) {
-      setLoggedUser(JSON.parse(storedUser));
-    }
+    if (storedUser) setLoggedUser(JSON.parse(storedUser));
   }, []);
 
   const handleLogout = () => {
@@ -60,69 +61,59 @@ const MainPage = () => {
     );
   };
 
+  const handleContactSubmit = async (e) => {
+    e.preventDefault();
+    if (!contactData.name || !contactData.email || !contactData.message) {
+      toast.error("Vă rugăm să completați toate câmpurile.");
+      return;
+    }
+    try {
+      await sendContactEmail(contactData);
+      toast.success("Mesajul a fost trimis cu succes!");
+      setContactData({ name: "", email: "", message: "" });
+      setShowContactForm(false);
+    } catch (err) {
+      toast.error("Eroare la trimiterea mesajului. Încercați din nou.");
+    }
+  };
+
   return (
-    <div className="min-h-screen flex flex-col bg-white">
+    <div className="min-h-screen flex flex-col bg-white relative">
+      <Toaster position="top-right" />
+
       {/* Top band */}
       <div
         className="fixed w-full h-12 flex justify-between items-center px-6 text-sm text-white shadow-md z-10"
         style={{ backgroundColor: "#3D3B3B" }}
       >
-        {/* Left side: logged-in user */}
         <div className="flex items-center gap-2">
-          {loggedUser && (
-            <span className="font-semibold text-white">
-              Conectat ca: {loggedUser.email}
-            </span>
-          )}
+          {loggedUser && <span className="font-semibold text-white">Conectat ca: {loggedUser.email}</span>}
         </div>
-
-        {/* Right side: Home + Login/Logout */}
         <div className="flex items-center gap-4">
-          <button
-            onClick={() => router.push("/")}
-            className="text-white font-semibold hover:text-gray-300 transition"
-          >
+          <button onClick={() => router.push("/")} className="text-white font-semibold hover:text-gray-300 transition">
             Home
           </button>
-
           {!loggedUser ? (
-            <button
-              onClick={() => router.push("/login")}
-              className="text-white font-semibold hover:text-gray-300 transition"
-            >
+            <button onClick={() => router.push("/login")} className="text-white font-semibold hover:text-gray-300 transition">
               Login
             </button>
           ) : (
-            <button
-              onClick={handleLogout}
-              className="text-white font-semibold hover:text-gray-300 transition"
-            >
+            <button onClick={handleLogout} className="text-white font-semibold hover:text-gray-300 transition">
               Logout
             </button>
           )}
         </div>
       </div>
 
-      {/* Main content area */}
+      {/* Main content */}
       <div className="flex-grow overflow-auto">
         {/* Header */}
         <div className="relative h-[350px] w-full shadow-lg">
-          <img
-            src="/header_image.jpeg"
-            alt="Header Background"
-            className="absolute inset-0 w-full h-full object-cover"
-          />
+          <img src="/header_image.jpeg" alt="Header Background" className="absolute inset-0 w-full h-full object-cover" />
           <div className="absolute inset-0 bg-gradient-to-b from-black/40 via-black/20 to-transparent"></div>
-
           <div className="absolute inset-0 flex flex-col items-center justify-center text-center px-4">
-            <img
-              src="/icon.jpeg"
-              alt="Logo"
-              className="w-20 h-20 rounded-full mb-4 border-2 border-white object-cover shadow-md"
-            />
-            <h1 className="text-white text-4xl md:text-5xl font-bold tracking-tight drop-shadow-lg">
-              Vlad Todiroae Architects +
-            </h1>
+            <img src="/icon.jpeg" alt="Logo" className="w-20 h-20 rounded-full mb-4 border-2 border-white object-cover shadow-md" />
+            <h1 className="text-white text-4xl md:text-5xl font-bold tracking-tight drop-shadow-lg">Vlad Todiroae Architects +</h1>
           </div>
         </div>
 
@@ -134,20 +125,14 @@ const MainPage = () => {
               onClick={() => router.push(`/project-list?category=${encodeURIComponent(card.text)}`)}
               className="max-w-sm w-full bg-[#3D3B3B] rounded-lg shadow-lg overflow-hidden text-center p-4 transform transition duration-300 hover:scale-105 hover:shadow-2xl"
             >
-              <div className="text-white text-xl font-semibold mb-3">
-                {card.text}
-              </div>
+              <div className="text-white text-xl font-semibold mb-3">{card.text}</div>
               <div className="overflow-hidden rounded-lg">
-                <img
-                  src={card.image}
-                  alt={card.text}
-                  className="w-full h-64 object-cover transition-transform duration-300 hover:scale-105"
-                />
+                <img src={card.image} alt={card.text} className="w-full h-64 object-cover transition-transform duration-300 hover:scale-105" />
               </div>
             </div>
           ))}
         </div>
-        
+
         {/* Admin-only button */}
         {loggedUser?.email === ADMIN_EMAIL && (
           <div className="flex justify-center mb-10">
@@ -155,17 +140,67 @@ const MainPage = () => {
               onClick={() => router.push("/add-project")}
               className="bg-[#3D3B3B] hover:bg-gray-700 text-white font-semibold px-6 py-3 rounded-lg shadow-md transition transform hover:scale-105"
             >
-            Adăugați Proiecte
+              Adăugați Proiecte
             </button>
           </div>
         )}
       </div>
 
+      {/* Contact popup overlay */}
+      {showContactForm && (
+        <div className="fixed inset-0 bg-black/50 flex justify-center items-center z-50">
+          <div className="bg-white rounded-xl w-full max-w-md p-6 relative shadow-lg">
+            <button
+              onClick={() => setShowContactForm(false)}
+              className="absolute top-3 right-3 text-gray-600 hover:text-gray-900"
+            >
+              <X size={20} />
+            </button>
+            <h2 className="text-2xl font-semibold mb-4 text-gray-800">Contact</h2>
+            <form onSubmit={handleContactSubmit} className="flex flex-col gap-4">
+              <input
+                type="text"
+                placeholder="Nume Prenume"
+                value={contactData.name}
+                onChange={(e) => setContactData({ ...contactData, name: e.target.value })}
+                className="border rounded-lg p-2 focus:outline-none focus:ring-2 focus:ring-gray-700"
+              />
+              <input
+                type="email"
+                placeholder="Adresă de email"
+                value={contactData.email}
+                onChange={(e) => setContactData({ ...contactData, email: e.target.value })}
+                className="border rounded-lg p-2 focus:outline-none focus:ring-2 focus:ring-gray-700"
+              />
+              <textarea
+                placeholder="Mesajul Dumneavoastră"
+                value={contactData.message}
+                onChange={(e) => setContactData({ ...contactData, message: e.target.value })}
+                className="border rounded-lg p-2 focus:outline-none focus:ring-2 focus:ring-gray-700 resize-none h-32"
+              />
+              <button
+                type="submit"
+                className="bg-[#3D3B3B] hover:bg-gray-800 text-white font-semibold py-2 rounded-lg transition"
+              >
+                Solicitați Informațiile
+              </button>
+            </form>
+          </div>
+        </div>
+      )}
+
       {/* Bottom Band */}
       <footer
-        className="fixed bottom-0 left-0 w-full h-10 flex justify-end items-center px-6 text-sm text-white shadow-md"
+        className="fixed bottom-0 left-0 w-full h-10 flex justify-between items-center px-6 text-sm text-white shadow-md"
         style={{ backgroundColor: "#3D3B3B" }}
       >
+        <button
+          onClick={() => setShowContactForm(true)}
+          className="text-white font-semibold hover:text-gray-300 transition"
+        >
+          Contact
+        </button>
+
         <div className="flex items-center gap-6">
           <div className="flex items-center gap-2">
             <Phone size={16} />

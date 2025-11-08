@@ -8,6 +8,7 @@
     "start": "next start"
   },
   "dependencies": {
+    "@emailjs/browser": "^4.4.1",
     "firebase": "^12.4.0",
     "lottie-react": "^2.4.1",
     "lucide-react": "^0.548.0",
