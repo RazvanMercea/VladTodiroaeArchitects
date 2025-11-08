@@ -7,6 +7,7 @@ import { Range } from "react-range";
 import { CATEGORIES } from "@/lib/constants";
 import { collection, getDocs } from "firebase/firestore";
 import { db } from "@/lib/firebase";
+import toast, { Toaster } from "react-hot-toast";
 
 const ProjectDetail = () => {
   const router = useRouter();
@@ -27,6 +28,7 @@ const ProjectDetail = () => {
   const [loggedUser, setLoggedUser] = useState(null);
   const [similarProjects, setSimilarProjects] = useState([]);
   const [loadingSimilar, setLoadingSimilar] = useState(true);
+  const [contactData, setContactData] = useState({ name: "", email: "", message: "" });
 
   useEffect(() => {
     const storedUser = localStorage.getItem("loggedUser");
@@ -94,6 +96,33 @@ const ProjectDetail = () => {
       console.error("Error fetching similar projects:", error);
     } finally {
       setLoadingSimilar(false);
+    }
+  };
+
+  const handleContactSubmit = async (e) => {
+    e.preventDefault();
+
+    if (!contactData.name || !contactData.email || !contactData.message) {
+      toast.error("Vă rugăm să completați toate câmpurile.");
+      return;
+    }
+
+    try {
+      const res = await fetch("/api/contact", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(contactData),
+      });
+
+      if (!res.ok) {
+        const data = await res.json();
+        throw new Error(data.message || "Eroare la trimiterea emailului");
+      }
+
+      toast.success("Mesajul a fost trimis cu succes!");
+      setContactData({ name: "", email: "", message: "" });
+    } catch (err) {
+      toast.error(err.message || "Eroare la trimiterea mesajului.");
     }
   };
 
@@ -369,6 +398,47 @@ const ProjectDetail = () => {
 
           {/* Sidebar */}
           <div className="lg:w-1/3 w-full flex flex-col gap-6">
+            {/* Contact Section */}
+            <div className="bg-gray-100 rounded-lg shadow-lg p-6 h-fit">
+              <h2 className="text-xl font-semibold text-gray-800 mb-4">
+                Contact
+              </h2>
+              <form onSubmit={handleContactSubmit} className="flex flex-col gap-4">
+                <input
+                  type="text"
+                  placeholder="Nume Prenume"
+                  value={contactData.name}
+                  onChange={(e) =>
+                    setContactData({ ...contactData, name: e.target.value })
+                  }
+                  className="border rounded-lg p-2 focus:outline-none focus:ring-2 focus:ring-gray-700"
+                />
+                <input
+                  type="email"
+                  placeholder="Adresă de email"
+                  value={contactData.email}
+                  onChange={(e) =>
+                    setContactData({ ...contactData, email: e.target.value })
+                  }
+                  className="border rounded-lg p-2 focus:outline-none focus:ring-2 focus:ring-gray-700"
+                />
+                <textarea
+                  placeholder="Mesajul Dumneavoastră"
+                  value={contactData.message}
+                  onChange={(e) =>
+                    setContactData({ ...contactData, message: e.target.value })
+                  }
+                  className="border rounded-lg p-2 focus:outline-none focus:ring-2 focus:ring-gray-700 resize-none h-32"
+                />
+                <button
+                  type="submit"
+                  className="bg-[#3D3B3B] hover:bg-gray-800 text-white font-semibold py-2 rounded-lg transition"
+                >
+                  Solicitați Informațiile
+                </button>
+              </form>
+            </div>
+            {/* Filtre */}
             <div className="bg-gray-100 rounded-lg shadow-lg p-6 h-fit">
               <h2 className="text-xl font-semibold text-gray-800 mb-4">
                 Filtre
@@ -483,6 +553,7 @@ const ProjectDetail = () => {
               </button>
             </div>
 
+            {/* Alte Categorii */}
             <div className="bg-gray-100 rounded-lg shadow-lg p-6 h-fit">
               <h2 className="text-xl font-semibold text-gray-800 mb-4">
                 Alte categorii

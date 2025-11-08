@@ -9,6 +9,7 @@ import { signOut } from "firebase/auth";
 import ProjectCard from "@/components/ProjectCard";
 import { CATEGORIES } from "@/lib/constants";
 import { Range } from "react-range";
+import toast, { Toaster } from "react-hot-toast";
 
 const ProjectList = () => {
   const router = useRouter();
