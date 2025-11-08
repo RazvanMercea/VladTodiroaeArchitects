@@ -162,6 +162,8 @@ const ProjectDetail = () => {
 
   return (
     <div className="min-h-screen flex flex-col">
+       <Toaster position="top-right" />
+       
       {/* Top Band */}
       <div className="fixed w-full h-12 flex justify-between items-center px-6 text-sm text-white shadow-md bg-[#3D3B3B] z-10">
         <div>

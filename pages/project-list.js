@@ -4,7 +4,6 @@ import { collection, getDocs, query, where } from "firebase/firestore";
 import { db, auth } from "@/lib/firebase";
 import SpinnerOverlay from "@/components/SpinnerOverlay";
 import { Phone, Mail } from "lucide-react";
-import toast from "react-hot-toast";
 import { signOut } from "firebase/auth";
 import ProjectCard from "@/components/ProjectCard";
 import { CATEGORIES } from "@/lib/constants";
