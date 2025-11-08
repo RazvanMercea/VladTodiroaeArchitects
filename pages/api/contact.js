@@ -17,23 +17,25 @@ export default async function handler(req, res) {
       port: 465,
       secure: true, // SSL
       auth: {
-        user: process.env.YAHOO_EMAIL,
-        pass: process.env.YAHOO_APP_PASSWORD
+        user: process.env.YAHOO_EMAIL,        
+        pass: process.env.YAHOO_APP_PASSWORD,
       },
     });
 
     await transporter.sendMail({
-    from: process.env.YAHOO_EMAIL,
-    replyTo: email,
-    to: process.env.NEXT_PUBLIC_CONTACT_EMAIL,
-    subject: `Mesaj de la ${name}`,
-    text: message,
-    html: `<p>${message}</p><p>De la: ${name} (${email})</p>`,
+      from: process.env.YAHOO_EMAIL,   
+      replyTo: email,                  
+      to: process.env.CONTACT_EMAIL,   
+      subject: `Mesaj de la ${name}`,  
+      text: message,
+      html: `<p>${message}</p><p>De la: ${name} (${email})</p>`,
     });
 
     return res.status(200).json({ message: "Email trimis cu succes" });
   } catch (error) {
     console.error("Nodemailer error:", error);
-    return res.status(500).json({ message: "Eroare la trimiterea emailului" });
+    return res.status(500).json({
+      message: error.message || "Eroare la trimiterea emailului",
+    });
   }
 }
