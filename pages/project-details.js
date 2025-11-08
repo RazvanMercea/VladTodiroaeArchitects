@@ -13,7 +13,7 @@ const ProjectDetail = () => {
   const [loading, setLoading] = useState(true);
   const [previewImage, setPreviewImage] = useState(null);
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
-  const [expandedFloor, setExpandedFloor] = useState(""); // selected floor for plan dropdown
+  const [expandedFloor, setExpandedFloor] = useState("");
   const [filters, setFilters] = useState({
     bedrooms: "",
     bathrooms: "",
@@ -72,32 +72,68 @@ const ProjectDetail = () => {
 
   return (
     <div className="min-h-screen flex flex-col">
-      {/* Top Band */}
+      {/* ✅ Top Band (aligned with ProjectList) */}
       <div className="fixed w-full h-12 flex justify-between items-center px-6 text-sm text-white shadow-md bg-[#3D3B3B] z-10">
+        <div>
+          {loggedUser && (
+            <span className="font-semibold">
+              Conectat ca: {loggedUser.email}
+            </span>
+          )}
+        </div>
         <div className="flex items-center gap-4">
-          {loggedUser && <span className="font-semibold">Conectat ca: {loggedUser.email}</span>}
-          <button onClick={() => router.push("/")} className="hover:text-gray-300 transition">
+          <button
+            onClick={() => router.push("/")}
+            className="hover:text-gray-300 transition"
+          >
             Home
           </button>
-        </div>
-        <div>
           {!loggedUser ? (
-            <button onClick={() => router.push("/login")} className="hover:text-gray-300 transition">
+            <button
+              onClick={() => router.push("/login")}
+              className="hover:text-gray-300 transition"
+            >
               Login
             </button>
           ) : (
-            <button onClick={handleLogout} className="hover:text-gray-300 transition">
+            <button
+              onClick={handleLogout}
+              className="hover:text-gray-300 transition"
+            >
               Logout
             </button>
           )}
         </div>
       </div>
 
-      {/* Title + Price */}
+      {/* ✅ Title + Breadcrumb */}
       <div className="mt-16 px-6">
         <div className="flex flex-col lg:flex-row justify-between items-start max-w-[1200px] mx-auto gap-4">
-          <div className="bg-gray-100 rounded-lg shadow-lg p-4 flex-1 flex items-center">
+          <div className="flex-1">
             <h1 className="text-3xl font-bold text-gray-800">{project.name}</h1>
+            {/* Breadcrumb */}
+            <div className="text-sm text-gray-600 mt-2 underline">
+              <span
+                className="cursor-pointer hover:text-gray-800"
+                onClick={() => router.push("/")}
+              >
+                Home
+              </span>{" "}
+              &gt;{" "}
+              <span
+                className="cursor-pointer hover:text-gray-800"
+                onClick={() =>
+                  router.push(
+                    `/project-list?category=${encodeURIComponent(
+                      project.category
+                    )}`
+                  )
+                }
+              >
+                {project.category}
+              </span>{" "}
+              &gt; <span className="text-gray-800">{project.name}</span>
+            </div>
           </div>
           <div className="bg-[#3D3B3B] text-white px-6 py-4 rounded-lg shadow-lg flex items-center justify-center text-3xl font-bold">
             <span>{project.price}</span>
@@ -117,7 +153,9 @@ const ProjectDetail = () => {
                 src={project.images?.[currentImageIndex]}
                 alt={`Image ${currentImageIndex + 1}`}
                 className="w-full h-full object-cover cursor-pointer"
-                onClick={() => setPreviewImage(project.images[currentImageIndex])}
+                onClick={() =>
+                  setPreviewImage(project.images[currentImageIndex])
+                }
               />
               {project.images?.length > 1 && (
                 <>
@@ -125,7 +163,8 @@ const ProjectDetail = () => {
                     className="absolute left-2 top-1/2 -translate-y-1/2 bg-white/50 rounded-full p-2 hover:bg-white"
                     onClick={() =>
                       setCurrentImageIndex(
-                        (currentImageIndex - 1 + project.images.length) % project.images.length
+                        (currentImageIndex - 1 + project.images.length) %
+                          project.images.length
                       )
                     }
                   >
@@ -134,7 +173,9 @@ const ProjectDetail = () => {
                   <button
                     className="absolute right-2 top-1/2 -translate-y-1/2 bg-white/50 rounded-full p-2 hover:bg-white"
                     onClick={() =>
-                      setCurrentImageIndex((currentImageIndex + 1) % project.images.length)
+                      setCurrentImageIndex(
+                        (currentImageIndex + 1) % project.images.length
+                      )
                     }
                   >
                     &#8594;
@@ -145,11 +186,15 @@ const ProjectDetail = () => {
 
             {/* General Info */}
             <div className="p-6 bg-gray-100 rounded-lg shadow-md space-y-4">
-              <h2 className="text-2xl font-semibold text-gray-800">Informatii generale</h2>
+              <h2 className="text-2xl font-semibold text-gray-800">
+                Informatii generale
+              </h2>
               <div className="flex flex-wrap gap-6 text-gray-700">
                 <div className="flex flex-col items-center">
                   <Home size={24} className="text-[#3D3B3B]" />
-                  <span>{project.usableMP} m<sup>2</sup></span>
+                  <span>
+                    {project.usableMP} m<sup>2</sup>
+                  </span>
                 </div>
                 {bedrooms > 0 && (
                   <div className="flex flex-col items-center">
@@ -180,22 +225,35 @@ const ProjectDetail = () => {
 
             {/* Compartimentare */}
             <div className="p-6 bg-gray-100 rounded-lg shadow-md">
-              <h2 className="text-2xl font-semibold text-gray-800 mb-4">Compartimentare</h2>
+              <h2 className="text-2xl font-semibold text-gray-800 mb-4">
+                Compartimentare
+              </h2>
               {project.floors?.map((floor, idx) => (
                 <div key={idx} className="mb-4">
-                  <h3 className="text-xl font-semibold text-gray-700 mb-2">Etaj: {floor.type}</h3>
+                  <h3 className="text-xl font-semibold text-gray-700 mb-2">
+                    Etaj: {floor.type}
+                  </h3>
                   <table className="w-full text-gray-800 border-collapse border border-gray-300">
                     <thead className="bg-[#3D3B3B] text-white">
                       <tr>
-                        <th className="border px-2 py-1 text-left">Tip cameră</th>
+                        <th className="border px-2 py-1 text-left">
+                          Tip cameră
+                        </th>
                         <th className="border px-2 py-1 text-left">mp</th>
                       </tr>
                     </thead>
                     <tbody>
                       {floor.rooms?.map((room, rIdx) => (
-                        <tr key={rIdx} className={rIdx % 2 === 0 ? "bg-gray-50" : "bg-gray-100"}>
+                        <tr
+                          key={rIdx}
+                          className={
+                            rIdx % 2 === 0 ? "bg-gray-50" : "bg-gray-100"
+                          }
+                        >
                           <td className="border px-2 py-1">{room.roomType}</td>
-                          <td className="border px-2 py-1">{room.mp} m<sup>2</sup></td>
+                          <td className="border px-2 py-1">
+                            {room.mp} m<sup>2</sup>
+                          </td>
                         </tr>
                       ))}
                     </tbody>
@@ -206,14 +264,22 @@ const ProjectDetail = () => {
 
             {/* Detalii suplimentare */}
             <div className="p-4 bg-gray-100 rounded-lg shadow-md space-y-2">
-              <h2 className="text-2xl font-semibold text-gray-800 mb-2">Detalii suplimentare</h2>
-              <p>Metri pătrați totali: {project.totalMP} m<sup>2</sup></p>
-              <p>Metri pătrați utili: {project.usableMP} m<sup>2</sup></p>
+              <h2 className="text-2xl font-semibold text-gray-800 mb-2">
+                Detalii suplimentare
+              </h2>
+              <p>
+                Metri pătrați totali: {project.totalMP} m<sup>2</sup>
+              </p>
+              <p>
+                Metri pătrați utili: {project.usableMP} m<sup>2</sup>
+              </p>
             </div>
 
-            {/* Planuri de nivel - dropdown */}
+            {/* Planuri de nivel */}
             <div className="p-6 bg-gray-100 rounded-lg shadow-md">
-              <h2 className="text-2xl font-semibold text-gray-800 mb-4">Planuri de nivel</h2>
+              <h2 className="text-2xl font-semibold text-gray-800 mb-4">
+                Planuri de nivel
+              </h2>
               <select
                 className="w-full border rounded-lg p-2 mb-4"
                 value={expandedFloor}
@@ -221,7 +287,9 @@ const ProjectDetail = () => {
               >
                 <option value="">Selectați etajul</option>
                 {project.floors?.map((floor) => (
-                  <option key={floor.type} value={floor.type}>{floor.type}</option>
+                  <option key={floor.type} value={floor.type}>
+                    {floor.type}
+                  </option>
                 ))}
               </select>
               {expandedFloor && project.plans?.[expandedFloor] && (
@@ -229,77 +297,122 @@ const ProjectDetail = () => {
                   src={project.plans[expandedFloor]}
                   alt={`Plan ${expandedFloor}`}
                   className="w-full h-auto object-cover rounded-lg cursor-pointer"
-                  onClick={() => setPreviewImage(project.plans[expandedFloor])}
+                  onClick={() =>
+                    setPreviewImage(project.plans[expandedFloor])
+                  }
                 />
               )}
             </div>
           </div>
 
-          {/* Right 1/3 Filters */}
+          {/* Filters & Other Categories */}
           <div className="lg:w-1/3 w-full flex flex-col gap-6">
             <div className="bg-gray-100 rounded-lg shadow-lg p-6 h-fit">
-              <h2 className="text-xl font-semibold text-gray-800 mb-4">Filtre</h2>
-              <label className="block mb-2 font-medium text-gray-700">Număr dormitoare:</label>
+              <h2 className="text-xl font-semibold text-gray-800 mb-4">
+                Filtre
+              </h2>
+              <label className="block mb-2 font-medium text-gray-700">
+                Număr dormitoare:
+              </label>
               <select
                 value={filters.bedrooms}
-                onChange={(e) => setFilters({ ...filters, bedrooms: e.target.value })}
+                onChange={(e) =>
+                  setFilters({ ...filters, bedrooms: e.target.value })
+                }
                 className="w-full border rounded-lg p-2 mb-4"
               >
                 <option value="">Toate</option>
-                {[1,2,3,4,5].map(n => <option key={n} value={n}>{n}</option>)}
+                {[1, 2, 3, 4, 5].map((n) => (
+                  <option key={n} value={n}>
+                    {n}
+                  </option>
+                ))}
               </select>
-              <label className="block mb-2 font-medium text-gray-700">Număr băi:</label>
+
+              <label className="block mb-2 font-medium text-gray-700">
+                Număr băi:
+              </label>
               <select
                 value={filters.bathrooms}
-                onChange={(e) => setFilters({ ...filters, bathrooms: e.target.value })}
+                onChange={(e) =>
+                  setFilters({ ...filters, bathrooms: e.target.value })
+                }
                 className="w-full border rounded-lg p-2 mb-4"
               >
                 <option value="">Toate</option>
-                {[1,2,3,4,5].map(n => <option key={n} value={n}>{n}</option>)}
+                {[1, 2, 3, 4, 5].map((n) => (
+                  <option key={n} value={n}>
+                    {n}
+                  </option>
+                ))}
               </select>
+
               <label className="flex items-center gap-2 mb-4">
                 <input
                   type="checkbox"
                   checked={filters.hasGarage}
-                  onChange={(e) => setFilters({ ...filters, hasGarage: e.target.checked })}
+                  onChange={(e) =>
+                    setFilters({ ...filters, hasGarage: e.target.checked })
+                  }
                 />
                 <span>Cu garaj</span>
               </label>
-              <label className="block mb-2 font-medium text-gray-700">Metri pătrați maximi:</label>
+
+              <label className="block mb-2 font-medium text-gray-700">
+                Metri pătrați maximi:
+              </label>
               <input
                 type="number"
                 value={filters.maxMP}
-                onChange={(e) => setFilters({ ...filters, maxMP: e.target.value })}
+                onChange={(e) =>
+                  setFilters({ ...filters, maxMP: e.target.value })
+                }
                 className="w-full border rounded-lg p-2 mb-4"
                 placeholder="ex: 150"
               />
+
               <label className="block mb-2 font-medium text-gray-700">
-                Interval preț (€): {filters.priceRange[0]} - {filters.priceRange[1]}
+                Interval preț (€): {filters.priceRange[0]} -{" "}
+                {filters.priceRange[1]}
               </label>
               <Range
                 step={50}
                 min={250}
                 max={10000}
                 values={filters.priceRange}
-                onChange={(values) => setFilters({ ...filters, priceRange: values })}
+                onChange={(values) =>
+                  setFilters({ ...filters, priceRange: values })
+                }
                 renderTrack={({ props, children }) => (
-                  <div {...props} className="h-2 rounded-full bg-gray-300 mt-3 mb-6 relative">
+                  <div
+                    {...props}
+                    className="h-2 rounded-full bg-gray-300 mt-3 mb-6 relative"
+                  >
                     <div
                       style={{
                         position: "absolute",
                         height: "100%",
                         background: "#3D3B3B",
-                        left: `${((filters.priceRange[0]-250)/(10000-250))*100}%`,
-                        width: `${((filters.priceRange[1]-filters.priceRange[0])/(10000-250))*100}%`,
+                        left: `${((filters.priceRange[0] - 250) /
+                          (10000 - 250)) *
+                          100}%`,
+                        width: `${((filters.priceRange[1] -
+                          filters.priceRange[0]) /
+                          (10000 - 250)) *
+                          100}%`,
                       }}
                     />
                     {children}
                   </div>
                 )}
                 renderThumb={({ props }) => (
-                  <div {...props} className="w-5 h-5 bg-[#3D3B3B] rounded-full cursor-pointer" />
+                  <div
+                    {...props}
+                    className="w-5 h-5 bg-[#3D3B3B] rounded-full cursor-pointer"
+                  />
                 )}
               />
+
               <button
                 onClick={handleFilterDetail}
                 className="w-full bg-[#3D3B3B] hover:bg-gray-800 text-white font-semibold py-2 rounded-lg transition"
@@ -309,12 +422,18 @@ const ProjectDetail = () => {
             </div>
 
             <div className="bg-gray-100 rounded-lg shadow-lg p-6 h-fit">
-              <h2 className="text-xl font-semibold text-gray-800 mb-4">Alte categorii</h2>
+              <h2 className="text-xl font-semibold text-gray-800 mb-4">
+                Alte categorii
+              </h2>
               <div className="space-y-3">
-                {CATEGORIES.filter(c => c !== project.category).map(c => (
+                {CATEGORIES.filter((c) => c !== project.category).map((c) => (
                   <button
                     key={c}
-                    onClick={() => router.push(`/project-list?category=${encodeURIComponent(c)}`)}
+                    onClick={() =>
+                      router.push(
+                        `/project-list?category=${encodeURIComponent(c)}`
+                      )
+                    }
                     className="block w-full text-left bg-[#3D3B3B] hover:bg-gray-800 text-white px-4 py-2 rounded-lg transition"
                   >
                     {c}
