@@ -1,10 +1,10 @@
 import React, { useState, useEffect } from "react";
 import { useRouter } from "next/router";
 import { doc, getDoc } from "firebase/firestore";
-import { db, auth, storage } from "@/lib/firebase";
+import { db, auth } from "@/lib/firebase";
 import { updateProjectInDatabase, deleteProjectFromDatabase } from "@/lib/projectService";
 import { signOut } from "firebase/auth";
-import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
+import { ref, uploadBytes, getDownloadURL } from "firebase/storage"; // Only needed if you implement uploads
 import toast, { Toaster } from "react-hot-toast";
 import SpinnerOverlay from "@/components/SpinnerOverlay";
 import { X, Plus, Trash2, Phone, Mail } from "lucide-react";
@@ -17,14 +17,14 @@ const CONTACT_PHONE = process.env.NEXT_PUBLIC_CONTACT_PHONE;
 const CONTACT_EMAIL = process.env.NEXT_PUBLIC_CONTACT_EMAIL;
 
 // Helper to upload a file to Firebase Storage and return URL
-const uploadFileToStorage = async (file, path) => {
+const uploadFileToStorage = async (storage, file, path) => {
   const storageRef = ref(storage, `${path}/${file.name}`);
   await uploadBytes(storageRef, file);
   const url = await getDownloadURL(storageRef);
   return url;
 };
 
-const EditProject = () => {
+const EditProject = ({ storage }) => {
   const router = useRouter();
   const { id } = router.query;
 
@@ -56,12 +56,13 @@ const EditProject = () => {
         const snap = await getDoc(docRef);
         if (snap.exists()) {
           const data = snap.data();
+
           setProjectName(data.name || "");
           setProjectCategory(data.category || CATEGORIES[0]);
           setProjectPrice(data.price || "");
           setTotalMP(data.totalMP || "");
           setUsableMP(data.usableMP || "");
-          setImages((data.images || []).map((url) => ({ url })));
+          setImages((data.images || []).map(url => ({ url })));
           setPlans(
             Object.keys(data.plans || {}).reduce(
               (acc, key) => ({ ...acc, [key]: { url: data.plans[key] } }),
@@ -87,9 +88,9 @@ const EditProject = () => {
   useEffect(() => {
     // Auto-add default floors if category changes
     const rule = CATEGORY_FLOOR_RULES[projectCategory] || { defaultFloors: [] };
-    setFloors((prev) => {
-      const newFloors = rule.defaultFloors.map((floor) => {
-        const existing = prev.find((f) => f.type === floor);
+    setFloors(prev => {
+      const newFloors = rule.defaultFloors.map(floor => {
+        const existing = prev.find(f => f.type === floor);
         return existing || { type: floor, rooms: [] };
       });
       return newFloors;
@@ -106,7 +107,7 @@ const EditProject = () => {
 
   // Logout
   const handleLogout = () => {
-    toast((t) => (
+    toast(t => (
       <div className="text-center">
         <p className="font-semibold mb-3">Sigur doriți să vă delogați?</p>
         <div className="flex justify-center gap-3">
@@ -138,56 +139,41 @@ const EditProject = () => {
   };
 
   // Image handlers
-  const handleImageUpload = (e) => {
+  const handleImageUpload = e => {
     const files = Array.from(e.target.files);
-    const newFiles = files.map((file) => ({ file, url: URL.createObjectURL(file) }));
+    const newFiles = files.map(file => ({ file, url: URL.createObjectURL(file) }));
     setImages([...images, ...newFiles]);
     e.target.value = "";
   };
-
-  const removeImage = (index) => setImages(images.filter((_, i) => i !== index));
+  const removeImage = index => setImages(images.filter((_, i) => i !== index));
 
   // Floor handlers
-  const addRoom = (floorIndex) => {
+  const addRoom = floorIndex => {
     setFloors(
       floors.map((f, i) =>
-        i === floorIndex
-          ? { ...f, rooms: [...f.rooms, { roomType: ROOM_TYPES[0], mp: "" }] }
-          : f
+        i === floorIndex ? { ...f, rooms: [...f.rooms, { roomType: ROOM_TYPES[0], mp: "" }] } : f
       )
     );
   };
-
   const removeRoom = (floorIndex, roomIndex) => {
     setFloors(
       floors.map((f, i) =>
-        i === floorIndex
-          ? { ...f, rooms: f.rooms.filter((_, idx) => idx !== roomIndex) }
-          : f
+        i === floorIndex ? { ...f, rooms: f.rooms.filter((_, idx) => idx !== roomIndex) } : f
       )
     );
   };
-
   const updateRoom = (floorIndex, roomIndex, field, value) => {
     setFloors(
       floors.map((f, i) =>
         i === floorIndex
-          ? {
-              ...f,
-              rooms: f.rooms.map((r, idx) =>
-                idx === roomIndex ? { ...r, [field]: value } : r
-              ),
-            }
+          ? { ...f, rooms: f.rooms.map((r, idx) => (idx === roomIndex ? { ...r, [field]: value } : r)) }
           : f
       )
     );
   };
-
-  const removeFloor = (floorIndex) => {
+  const removeFloor = floorIndex => {
     const floor = floors[floorIndex];
-    if (
-      CATEGORY_FLOOR_RULES[projectCategory].defaultFloors.includes(floor.type)
-    ) {
+    if (CATEGORY_FLOOR_RULES[projectCategory].defaultFloors.includes(floor.type)) {
       toast.error(`Etajul '${floor.type}' nu poate fi șters.`);
       return;
     }
@@ -195,23 +181,20 @@ const EditProject = () => {
   };
 
   const availableFloors = ALL_FLOORS.filter(
-    (f) =>
-      !floors.some((floor) => floor.type === f) &&
-      !CATEGORY_FLOOR_RULES[projectCategory].disabledOptions.includes(f)
+    f => !floors.some(floor => floor.type === f) && !CATEGORY_FLOOR_RULES[projectCategory].disabledOptions.includes(f)
   );
 
   // Plan upload
   const handlePlanUpload = (e, floorType) => {
     const file = e.target.files[0];
     if (!file) return;
-
     setPlans({ ...plans, [floorType]: { file, url: URL.createObjectURL(file) } });
     e.target.value = "";
   };
 
   // Delete project
   const handleDeleteProject = () => {
-    toast((t) => (
+    toast(t => (
       <div className="text-center">
         <p className="font-semibold mb-3">Sunteți sigur că ștergeți proiectul?</p>
         <div className="flex justify-center gap-3">
@@ -222,9 +205,7 @@ const EditProject = () => {
               if (res.success) {
                 toast.success("Proiect șters cu succes!");
                 router.push("/");
-              } else {
-                toast.error("Eroare la ștergere.");
-              }
+              } else toast.error("Eroare la ștergere.");
             }}
             className="bg-red-600 hover:bg-red-700 text-white px-4 py-1 rounded-lg transition"
           >
@@ -253,13 +234,13 @@ const EditProject = () => {
     try {
       // Upload new images
       const uploadedImages = await Promise.all(
-        images.map(async (img) => img.file ? await uploadFileToStorage(img.file, `projects/${id}/images`) : img.url)
+        images.map(async img => (img.file ? await uploadFileToStorage(storage, img.file, `projects/${id}/images`) : img.url))
       );
 
       // Upload new plans
       const uploadedPlans = {};
       for (const [floor, plan] of Object.entries(plans)) {
-        uploadedPlans[floor] = plan.file ? await uploadFileToStorage(plan.file, `projects/${id}/plans`) : plan.url;
+        uploadedPlans[floor] = plan.file ? await uploadFileToStorage(storage, plan.file, `projects/${id}/plans`) : plan.url;
       }
 
       const updatedData = {
@@ -278,9 +259,7 @@ const EditProject = () => {
       if (res.success) {
         toast.success("Proiect actualizat cu succes!");
         router.push(`/project-detail?title=${encodeURIComponent(projectName)}`);
-      } else {
-        toast.error("Eroare la actualizare!");
-      }
+      } else toast.error("Eroare la actualizare!");
     } catch (err) {
       console.error("Update error:", err);
       toast.error("Eroare la actualizarea proiectului.");
@@ -294,24 +273,13 @@ const EditProject = () => {
       <Toaster position="top-right" />
 
       {/* Top Band */}
-      <div
-        className="fixed w-full h-12 flex justify-between items-center px-6 text-sm text-white shadow-md"
-        style={{ backgroundColor: "#3D3B3B" }}
-      >
+      <div className="fixed w-full h-12 flex justify-between items-center px-6 text-sm text-white shadow-md" style={{ backgroundColor: "#3D3B3B" }}>
         <div className="flex items-center gap-2">
-          {loggedUser && (
-            <span className="font-semibold text-white">
-              Conectat ca: {loggedUser.email}
-            </span>
-          )}
+          {loggedUser && <span className="font-semibold text-white">Conectat ca: {loggedUser.email}</span>}
         </div>
         <div className="flex items-center gap-4">
-          <button onClick={() => router.push("/")} className="text-white font-semibold hover:text-gray-300 transition">
-            Home
-          </button>
-          <button onClick={handleLogout} className="text-white font-semibold hover:text-gray-300 transition">
-            Logout
-          </button>
+          <button onClick={() => router.push("/")} className="text-white font-semibold hover:text-gray-300 transition">Home</button>
+          <button onClick={handleLogout} className="text-white font-semibold hover:text-gray-300 transition">Logout</button>
         </div>
       </div>
 
@@ -323,58 +291,28 @@ const EditProject = () => {
 
           <div>
             <label className="block mb-1 font-semibold text-gray-700">Nume Proiect</label>
-            <input
-              type="text"
-              value={projectName}
-              onChange={(e) => setProjectName(e.target.value)}
-              className="w-full border rounded-lg p-2"
-            />
+            <input type="text" value={projectName} onChange={e => setProjectName(e.target.value)} className="w-full border rounded-lg p-2" />
           </div>
 
           <div>
             <label className="block mb-1 font-semibold text-gray-700">Categorie</label>
-            <select
-              value={projectCategory}
-              onChange={(e) => setProjectCategory(e.target.value)}
-              className="w-full border rounded-lg p-2"
-            >
-              {CATEGORIES.map((cat, i) => (
-                <option key={i} value={cat}>{cat}</option>
-              ))}
+            <select value={projectCategory} onChange={e => setProjectCategory(e.target.value)} className="w-full border rounded-lg p-2">
+              {CATEGORIES.map((cat, i) => <option key={i} value={cat}>{cat}</option>)}
             </select>
           </div>
 
           <div className="grid grid-cols-2 gap-4">
             <div>
               <label className="block mb-1 font-semibold text-gray-700">Pret (€)</label>
-              <input
-                type="number"
-                value={projectPrice}
-                onChange={(e) => setProjectPrice(e.target.value)}
-                className="w-full border rounded-lg p-2"
-              />
+              <input type="number" value={projectPrice} onChange={e => setProjectPrice(e.target.value)} className="w-full border rounded-lg p-2" />
             </div>
-
             <div>
               <label className="block mb-1 font-semibold text-gray-700">Metri pătrați totali</label>
-              <input
-                type="number"
-                step="0.1"
-                value={totalMP}
-                onChange={(e) => setTotalMP(e.target.value)}
-                className="w-full border rounded-lg p-2"
-              />
+              <input type="number" step="0.1" value={totalMP} onChange={e => setTotalMP(e.target.value)} className="w-full border rounded-lg p-2" />
             </div>
-
             <div>
               <label className="block mb-1 font-semibold text-gray-700">Metri pătrați utili</label>
-              <input
-                type="number"
-                step="0.1"
-                value={usableMP}
-                onChange={(e) => setUsableMP(e.target.value)}
-                className="w-full border rounded-lg p-2"
-              />
+              <input type="number" step="0.1" value={usableMP} onChange={e => setUsableMP(e.target.value)} className="w-full border rounded-lg p-2" />
             </div>
           </div>
 
@@ -386,9 +324,7 @@ const EditProject = () => {
               {images.map((img, idx) => (
                 <div key={idx} className="relative w-32 h-32">
                   <img src={img.url} alt="preview" className="w-full h-full object-cover rounded-lg" />
-                  <button onClick={() => removeImage(idx)} className="absolute top-1 right-1 bg-red-500 p-1 rounded-full text-white">
-                    <X size={14}/>
-                  </button>
+                  <button onClick={() => removeImage(idx)} className="absolute top-1 right-1 bg-red-500 p-1 rounded-full text-white"><X size={14}/></button>
                 </div>
               ))}
             </div>
