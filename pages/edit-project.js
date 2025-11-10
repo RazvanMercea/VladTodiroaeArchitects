@@ -39,7 +39,7 @@ const EditProject = () => {
   }, []);
 
   useEffect(() => {
-    if (!id) return;
+    if (!router.isReady || !id) return;
 
     const fetchProject = async () => {
       try {
@@ -74,7 +74,7 @@ const EditProject = () => {
     };
 
     fetchProject();
-  }, [id]);
+  }, [router.isReady, id]);
 
   useEffect(() => {
     // Auto-add default floors if category changes
@@ -88,7 +88,7 @@ const EditProject = () => {
     });
   }, [projectCategory]);
 
-  if (!loggedUser) return <SpinnerOverlay />;
+  if (!router.isReady || !loggedUser || loading) return <SpinnerOverlay />;
   if (loggedUser.email !== ADMIN_EMAIL)
     return (
       <div className="flex justify-center items-center min-h-screen">
