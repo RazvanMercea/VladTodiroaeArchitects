@@ -1,9 +1,10 @@
 import React, { useState, useEffect } from "react";
 import { useRouter } from "next/router";
 import { doc, getDoc } from "firebase/firestore";
-import { db, auth } from "@/lib/firebase";
+import { db, auth, storage } from "@/lib/firebase";
 import { updateProjectInDatabase, deleteProjectFromDatabase } from "@/lib/projectService";
 import { signOut } from "firebase/auth";
+import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
 import toast, { Toaster } from "react-hot-toast";
 import SpinnerOverlay from "@/components/SpinnerOverlay";
 import { X, Plus, Trash2, Phone, Mail } from "lucide-react";
@@ -14,6 +15,14 @@ import { validateProject } from "@/lib/projectValidation";
 const ADMIN_EMAIL = process.env.NEXT_PUBLIC_ADMIN_EMAIL;
 const CONTACT_PHONE = process.env.NEXT_PUBLIC_CONTACT_PHONE;
 const CONTACT_EMAIL = process.env.NEXT_PUBLIC_CONTACT_EMAIL;
+
+// Helper to upload a file to Firebase Storage and return URL
+const uploadFileToStorage = async (file, path) => {
+  const storageRef = ref(storage, `${path}/${file.name}`);
+  await uploadBytes(storageRef, file);
+  const url = await getDownloadURL(storageRef);
+  return url;
+};
 
 const EditProject = () => {
   const router = useRouter();
@@ -41,15 +50,12 @@ const EditProject = () => {
   useEffect(() => {
     if (!router.isReady || !id) return;
 
-    console.log("Fetching project with ID:", id);
-
     const fetchProject = async () => {
       try {
         const docRef = doc(db, "projects", id);
         const snap = await getDoc(docRef);
         if (snap.exists()) {
           const data = snap.data();
-
           setProjectName(data.name || "");
           setProjectCategory(data.category || CATEGORIES[0]);
           setProjectPrice(data.price || "");
@@ -97,8 +103,6 @@ const EditProject = () => {
         <h2 className="text-2xl font-bold text-red-700">Acces interzis</h2>
       </div>
     );
-
-  if (loading) return <SpinnerOverlay />;
 
   // Logout
   const handleLogout = () => {
@@ -201,11 +205,6 @@ const EditProject = () => {
     const file = e.target.files[0];
     if (!file) return;
 
-    if (plans[floorType]) {
-      toast.error("Poti incarca doar o imagine per etaj.");
-      return;
-    }
-
     setPlans({ ...plans, [floorType]: { file, url: URL.createObjectURL(file) } });
     e.target.value = "";
   };
@@ -251,26 +250,42 @@ const EditProject = () => {
 
     setIsSaving(true);
 
-    const updatedData = {
-      name: projectName,
-      category: projectCategory,
-      price: Number(projectPrice),
-      totalMP: Number(totalMP),
-      usableMP: Number(usableMP),
-      images,
-      floors,
-      plans,
-      updatedAt: new Date().toISOString(),
-    };
+    try {
+      // Upload new images
+      const uploadedImages = await Promise.all(
+        images.map(async (img) => img.file ? await uploadFileToStorage(img.file, `projects/${id}/images`) : img.url)
+      );
 
-    const res = await updateProjectInDatabase(id, updatedData);
-    setIsSaving(false);
+      // Upload new plans
+      const uploadedPlans = {};
+      for (const [floor, plan] of Object.entries(plans)) {
+        uploadedPlans[floor] = plan.file ? await uploadFileToStorage(plan.file, `projects/${id}/plans`) : plan.url;
+      }
 
-    if (res.success) {
-      toast.success("Proiect actualizat cu succes!");
-      router.push(`/project-detail?title=${encodeURIComponent(projectName)}`);
-    } else {
-      toast.error("Eroare la actualizare!");
+      const updatedData = {
+        name: projectName,
+        category: projectCategory,
+        price: Number(projectPrice),
+        totalMP: Number(totalMP),
+        usableMP: Number(usableMP),
+        images: uploadedImages,
+        floors,
+        plans: uploadedPlans,
+        updatedAt: new Date().toISOString(),
+      };
+
+      const res = await updateProjectInDatabase(id, updatedData);
+      if (res.success) {
+        toast.success("Proiect actualizat cu succes!");
+        router.push(`/project-detail?title=${encodeURIComponent(projectName)}`);
+      } else {
+        toast.error("Eroare la actualizare!");
+      }
+    } catch (err) {
+      console.error("Update error:", err);
+      toast.error("Eroare la actualizarea proiectului.");
+    } finally {
+      setIsSaving(false);
     }
   };
 
