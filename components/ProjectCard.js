@@ -42,7 +42,10 @@ const ProjectCard = ({ project, countRooms }) => {
   const handleEditClick = (e) => {
     e.stopPropagation(); // prevenim click pe card
     sessionStorage.setItem("selectedProject", JSON.stringify(project));
-    router.push(`/edit-project?id=${project.id}`);
+    router.push({
+      pathname: "/edit-project",
+      query: { title: project.name },
+    });
   };
 
   return (

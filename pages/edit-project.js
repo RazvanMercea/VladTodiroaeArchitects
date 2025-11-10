@@ -4,7 +4,7 @@ import { doc, getDoc } from "firebase/firestore";
 import { db, auth } from "@/lib/firebase";
 import { updateProjectInDatabase, deleteProjectFromDatabase } from "@/lib/projectService";
 import { signOut } from "firebase/auth";
-import { ref, uploadBytes, getDownloadURL } from "firebase/storage"; // Only needed if you implement uploads
+import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
 import toast, { Toaster } from "react-hot-toast";
 import SpinnerOverlay from "@/components/SpinnerOverlay";
 import { X, Plus, Trash2, Phone, Mail } from "lucide-react";
@@ -16,12 +16,10 @@ const ADMIN_EMAIL = process.env.NEXT_PUBLIC_ADMIN_EMAIL;
 const CONTACT_PHONE = process.env.NEXT_PUBLIC_CONTACT_PHONE;
 const CONTACT_EMAIL = process.env.NEXT_PUBLIC_CONTACT_EMAIL;
 
-// Helper to upload a file to Firebase Storage and return URL
 const uploadFileToStorage = async (storage, file, path) => {
   const storageRef = ref(storage, `${path}/${file.name}`);
   await uploadBytes(storageRef, file);
-  const url = await getDownloadURL(storageRef);
-  return url;
+  return await getDownloadURL(storageRef);
 };
 
 const EditProject = ({ storage }) => {
@@ -49,35 +47,32 @@ const EditProject = ({ storage }) => {
 
   useEffect(() => {
     if (!router.isReady || !id) return;
-    console.log("Fetching project with ID:", id);
 
     const fetchProject = async () => {
       try {
         const docRef = doc(db, "projects", id);
         const snap = await getDoc(docRef);
-        console.log("Document snapshot exists?", snap.exists());
-        if (snap.exists()) {
-          const data = snap.data();
-
-          setProjectName(data.name || "");
-          setProjectCategory(data.category || CATEGORIES[0]);
-          setProjectPrice(data.price || "");
-          setTotalMP(data.totalMP || "");
-          setUsableMP(data.usableMP || "");
-          setImages((data.images || []).map(url => ({ url })));
-          setPlans(
-            Object.keys(data.plans || {}).reduce(
-              (acc, key) => ({ ...acc, [key]: { url: data.plans[key] } }),
-              {}
-            )
-          );
-          setFloors(data.floors || []);
-        } else {
+        if (!snap.exists()) {
           toast.error("Proiectul nu a fost găsit.");
           router.push("/");
+          return;
         }
+        const data = snap.data();
+        setProjectName(data.name || "");
+        setProjectCategory(data.category || CATEGORIES[0]);
+        setProjectPrice(data.price || "");
+        setTotalMP(data.totalMP || "");
+        setUsableMP(data.usableMP || "");
+        setImages((data.images || []).map(url => ({ url })));
+        setPlans(
+          Object.keys(data.plans || {}).reduce(
+            (acc, key) => ({ ...acc, [key]: { url: data.plans[key] } }),
+            {}
+          )
+        );
+        setFloors(data.floors || []);
       } catch (error) {
-        console.error("Error fetching project:", error);
+        console.error(error);
         toast.error("Eroare la încărcarea proiectului.");
       } finally {
         setLoading(false);
@@ -90,13 +85,9 @@ const EditProject = ({ storage }) => {
   useEffect(() => {
     // Auto-add default floors if category changes
     const rule = CATEGORY_FLOOR_RULES[projectCategory] || { defaultFloors: [] };
-    setFloors(prev => {
-      const newFloors = rule.defaultFloors.map(floor => {
-        const existing = prev.find(f => f.type === floor);
-        return existing || { type: floor, rooms: [] };
-      });
-      return newFloors;
-    });
+    setFloors(prev =>
+      rule.defaultFloors.map(floor => prev.find(f => f.type === floor) || { type: floor, rooms: [] })
+    );
   }, [projectCategory]);
 
   if (!router.isReady || !loggedUser || loading) return <SpinnerOverlay />;
@@ -107,7 +98,7 @@ const EditProject = ({ storage }) => {
       </div>
     );
 
-  // Logout
+  // Handlers
   const handleLogout = () => {
     toast(t => (
       <div className="text-center">
@@ -125,14 +116,11 @@ const EditProject = ({ storage }) => {
                 })
                 .catch(() => toast.error("A apărut o eroare la delogare."));
             }}
-            className="bg-red-600 hover:bg-red-700 text-white px-4 py-1 rounded-lg transition"
+            className="bg-red-600 hover:bg-red-700 text-white px-4 py-1 rounded-lg"
           >
             Da
           </button>
-          <button
-            onClick={() => toast.dismiss(t.id)}
-            className="bg-gray-300 hover:bg-gray-400 text-black px-4 py-1 rounded-lg transition"
-          >
+          <button onClick={() => toast.dismiss(t.id)} className="bg-gray-300 hover:bg-gray-400 text-black px-4 py-1 rounded-lg">
             Nu
           </button>
         </div>
@@ -140,7 +128,6 @@ const EditProject = ({ storage }) => {
     ));
   };
 
-  // Image handlers
   const handleImageUpload = e => {
     const files = Array.from(e.target.files);
     const newFiles = files.map(file => ({ file, url: URL.createObjectURL(file) }));
@@ -149,29 +136,14 @@ const EditProject = ({ storage }) => {
   };
   const removeImage = index => setImages(images.filter((_, i) => i !== index));
 
-  // Floor handlers
   const addRoom = floorIndex => {
-    setFloors(
-      floors.map((f, i) =>
-        i === floorIndex ? { ...f, rooms: [...f.rooms, { roomType: ROOM_TYPES[0], mp: "" }] } : f
-      )
-    );
+    setFloors(floors.map((f, i) => i === floorIndex ? { ...f, rooms: [...f.rooms, { roomType: ROOM_TYPES[0], mp: "" }] } : f));
   };
   const removeRoom = (floorIndex, roomIndex) => {
-    setFloors(
-      floors.map((f, i) =>
-        i === floorIndex ? { ...f, rooms: f.rooms.filter((_, idx) => idx !== roomIndex) } : f
-      )
-    );
+    setFloors(floors.map((f, i) => i === floorIndex ? { ...f, rooms: f.rooms.filter((_, idx) => idx !== roomIndex) } : f));
   };
   const updateRoom = (floorIndex, roomIndex, field, value) => {
-    setFloors(
-      floors.map((f, i) =>
-        i === floorIndex
-          ? { ...f, rooms: f.rooms.map((r, idx) => (idx === roomIndex ? { ...r, [field]: value } : r)) }
-          : f
-      )
-    );
+    setFloors(floors.map((f, i) => i === floorIndex ? { ...f, rooms: f.rooms.map((r, idx) => idx === roomIndex ? { ...r, [field]: value } : r) } : f));
   };
   const removeFloor = floorIndex => {
     const floor = floors[floorIndex];
@@ -186,7 +158,6 @@ const EditProject = ({ storage }) => {
     f => !floors.some(floor => floor.type === f) && !CATEGORY_FLOOR_RULES[projectCategory].disabledOptions.includes(f)
   );
 
-  // Plan upload
   const handlePlanUpload = (e, floorType) => {
     const file = e.target.files[0];
     if (!file) return;
@@ -194,7 +165,6 @@ const EditProject = ({ storage }) => {
     e.target.value = "";
   };
 
-  // Delete project
   const handleDeleteProject = () => {
     toast(t => (
       <div className="text-center">
@@ -209,14 +179,11 @@ const EditProject = ({ storage }) => {
                 router.push("/");
               } else toast.error("Eroare la ștergere.");
             }}
-            className="bg-red-600 hover:bg-red-700 text-white px-4 py-1 rounded-lg transition"
+            className="bg-red-600 hover:bg-red-700 text-white px-4 py-1 rounded-lg"
           >
             Da
           </button>
-          <button
-            onClick={() => toast.dismiss(t.id)}
-            className="bg-gray-300 hover:bg-gray-400 text-black px-4 py-1 rounded-lg transition"
-          >
+          <button onClick={() => toast.dismiss(t.id)} className="bg-gray-300 hover:bg-gray-400 text-black px-4 py-1 rounded-lg">
             Nu
           </button>
         </div>
@@ -224,7 +191,6 @@ const EditProject = ({ storage }) => {
     ));
   };
 
-  // Update project
   const handleUpdateProject = async () => {
     if (!validateProject(projectName, images, projectPrice, totalMP, usableMP, floors, plans)) {
       toast.error("Vă rugăm completați toate câmpurile!");
@@ -234,12 +200,10 @@ const EditProject = ({ storage }) => {
     setIsSaving(true);
 
     try {
-      // Upload new images
       const uploadedImages = await Promise.all(
-        images.map(async img => (img.file ? await uploadFileToStorage(storage, img.file, `projects/${id}/images`) : img.url))
+        images.map(img => (img.file ? uploadFileToStorage(storage, img.file, `projects/${id}/images`) : img.url))
       );
 
-      // Upload new plans
       const uploadedPlans = {};
       for (const [floor, plan] of Object.entries(plans)) {
         uploadedPlans[floor] = plan.file ? await uploadFileToStorage(storage, plan.file, `projects/${id}/plans`) : plan.url;
@@ -263,7 +227,7 @@ const EditProject = ({ storage }) => {
         router.push(`/project-detail?title=${encodeURIComponent(projectName)}`);
       } else toast.error("Eroare la actualizare!");
     } catch (err) {
-      console.error("Update error:", err);
+      console.error(err);
       toast.error("Eroare la actualizarea proiectului.");
     } finally {
       setIsSaving(false);
@@ -275,7 +239,7 @@ const EditProject = ({ storage }) => {
       <Toaster position="top-right" />
 
       {/* Top Band */}
-      <div className="fixed w-full h-12 flex justify-between items-center px-6 text-sm text-white shadow-md" style={{ backgroundColor: "#3D3B3B" }}>
+      <div className="fixed w-full h-12 flex justify-between items-center px-6 text-sm text-white shadow-md bg-[#3D3B3B]">
         <div className="flex items-center gap-2">
           {loggedUser && <span className="font-semibold text-white">Conectat ca: {loggedUser.email}</span>}
         </div>
@@ -299,7 +263,7 @@ const EditProject = ({ storage }) => {
           <div>
             <label className="block mb-1 font-semibold text-gray-700">Categorie</label>
             <select value={projectCategory} onChange={e => setProjectCategory(e.target.value)} className="w-full border rounded-lg p-2">
-              {CATEGORIES.map((cat, i) => <option key={i} value={cat}>{cat}</option>)}
+              {CATEGORIES.map(cat => <option key={cat} value={cat}>{cat}</option>)}
             </select>
           </div>
 
@@ -343,26 +307,18 @@ const EditProject = ({ storage }) => {
               const floorType = e.target.value;
               if (floorType) setFloors([...floors, { type: floorType, rooms: [] }]);
             }}
-            className={`px-4 py-2 rounded-lg font-semibold focus:outline-none focus:ring-2 focus:ring-green-500
-              bg-green-600 text-white hover:bg-green-700
-              ${availableFloors.length === 0 ? "opacity-50 cursor-not-allowed" : ""}
-            `}
+            className={`px-4 py-2 rounded-lg font-semibold focus:outline-none focus:ring-2 focus:ring-green-500 bg-green-600 text-white hover:bg-green-700 ${availableFloors.length === 0 ? "opacity-50 cursor-not-allowed" : ""}`}
             disabled={availableFloors.length === 0}
           >
             <option value="" disabled>+ Adaugă Etaj</option>
-            {availableFloors.map((f) => <option key={f} value={f}>{f}</option>)}
+            {availableFloors.map(f => <option key={f} value={f}>{f}</option>)}
           </select>
 
           {floors.map((floor, floorIndex) => (
             <div key={floorIndex} className="border p-3 rounded-md space-y-2 relative">
               <div className="flex justify-between items-center">
                 <h3 className="font-semibold">{floor.type}</h3>
-                <button
-                  onClick={() => removeFloor(floorIndex)}
-                  className="text-red-600 hover:text-red-800"
-                >
-                  <Trash2 size={16}/>
-                </button>
+                <button onClick={() => removeFloor(floorIndex)} className="text-red-600 hover:text-red-800"><Trash2 size={16}/></button>
               </div>
 
               <table className="w-full text-gray-800">
@@ -377,26 +333,15 @@ const EditProject = ({ storage }) => {
                   {floor.rooms.map((room, roomIndex) => (
                     <tr key={roomIndex}>
                       <td>
-                        <select
-                          value={room.roomType}
-                          onChange={(e) => updateRoom(floorIndex, roomIndex, "roomType", e.target.value)}
-                          className="w-full border rounded-md p-1"
-                        >
-                          {ROOM_TYPES.map((type) => <option key={type} value={type}>{type}</option>)}
+                        <select value={room.roomType} onChange={(e) => updateRoom(floorIndex, roomIndex, "roomType", e.target.value)} className="w-full border rounded-md p-1">
+                          {ROOM_TYPES.map(type => <option key={type} value={type}>{type}</option>)}
                         </select>
                       </td>
                       <td>
-                        <input
-                          type="number"
-                          value={room.mp}
-                          onChange={(e) => updateRoom(floorIndex, roomIndex, "mp", e.target.value)}
-                          className="w-full border rounded-md p-1"
-                        />
+                        <input type="number" value={room.mp} onChange={(e) => updateRoom(floorIndex, roomIndex, "mp", e.target.value)} className="w-full border rounded-md p-1" />
                       </td>
                       <td className="text-center">
-                        <button onClick={() => removeRoom(floorIndex, roomIndex)} className="text-red-600">
-                          <X size={16}/>
-                        </button>
+                        <button onClick={() => removeRoom(floorIndex, roomIndex)} className="text-red-600"><X size={16}/></button>
                       </td>
                     </tr>
                   ))}
@@ -416,37 +361,24 @@ const EditProject = ({ storage }) => {
             <div key={idx} className="flex items-center gap-4">
               <span>{floor.type}</span>
               <input type="file" accept="image/*" onChange={(e) => handlePlanUpload(e, floor.type)} />
-              {plans[floor.type] && (
-                <img src={plans[floor.type].url} alt="Plan" className="w-24 h-24 object-cover rounded-md" />
-              )}
+              {plans[floor.type] && <img src={plans[floor.type].url} alt="Plan" className="w-24 h-24 object-cover rounded-md" />}
             </div>
           ))}
         </div>
 
         {/* Buttons */}
         <div className="flex justify-center gap-6 my-6">
-          <button onClick={handleUpdateProject} className="bg-green-600 hover:bg-green-700 text-white px-6 py-2 rounded-lg">
-            {isSaving ? "Se actualizează..." : "Actualizează Proiect"}
-          </button>
-          <button onClick={handleDeleteProject} className="bg-red-600 hover:bg-red-700 text-white px-6 py-2 rounded-lg">
-            Șterge Proiect
-          </button>
+          <button onClick={handleUpdateProject} className="bg-green-600 hover:bg-green-700 text-white px-6 py-2 rounded-lg">{isSaving ? "Se actualizează..." : "Actualizează Proiect"}</button>
+          <button onClick={handleDeleteProject} className="bg-red-600 hover:bg-red-700 text-white px-6 py-2 rounded-lg">Șterge Proiect</button>
         </div>
       </div>
 
-      {/* Image Preview Popup */}
-            {previewImage && (
-              <div
-                className="fixed inset-0 bg-black/70 flex items-center justify-center z-50"
-                onClick={() => setPreviewImage(null)}
-              >
-                <img
-                  src={previewImage}
-                  alt="Preview"
-                  className="max-h-[90%] max-w-[90%] rounded-lg shadow-lg"
-                />
-              </div>
-            )}
+      {/* Image Preview */}
+      {previewImage && (
+        <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50" onClick={() => setPreviewImage(null)}>
+          <img src={previewImage} alt="Preview" className="max-h-[90%] max-w-[90%] rounded-lg shadow-lg" />
+        </div>
+      )}
       
             {/* Bottom Band */}
             <footer
