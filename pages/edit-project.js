@@ -188,6 +188,10 @@ const EditProjectPage = () => {
   );
 
   const handleUpdateProject = async () => {
+    if (!projectId) {
+    toast.error("Project ID not loaded yet.");
+    return;
+   }
     if (
       !validateProject(
         projectName,
