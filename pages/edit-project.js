@@ -41,6 +41,8 @@ const EditProject = () => {
   useEffect(() => {
     if (!router.isReady || !id) return;
 
+    console.log("Fetching project with ID:", id);
+
     const fetchProject = async () => {
       try {
         const docRef = doc(db, "projects", id);
