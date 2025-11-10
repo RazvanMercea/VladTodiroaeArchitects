@@ -1,7 +1,9 @@
 import React, { useEffect, useState } from "react";
 import { useRouter } from "next/router";
-import { Bed, Bath, Home, Car, Laptop, Euro } from "lucide-react";
+import { Bed, Bath, Home, Car, Laptop, Euro, Pen } from "lucide-react";
 import Lottie from "lottie-react";
+
+const ADMIN_EMAIL = process.env.NEXT_PUBLIC_ADMIN_EMAIL;
 
 const ProjectCard = ({ project, countRooms }) => {
   const router = useRouter();
@@ -9,12 +11,18 @@ const ProjectCard = ({ project, countRooms }) => {
   const [isHovered, setIsHovered] = useState(false);
   const [imageLoaded, setImageLoaded] = useState(false);
   const [loaderAnimation, setLoaderAnimation] = useState(null);
+  const [loggedUser, setLoggedUser] = useState(null);
 
   useEffect(() => {
     fetch("/animations/house.json")
       .then((res) => res.json())
       .then((data) => setLoaderAnimation(data))
       .catch((err) => console.error("Failed to load loader animation", err));
+  }, []);
+
+  useEffect(() => {
+    const storedUser = localStorage.getItem("loggedUser");
+    if (storedUser) setLoggedUser(JSON.parse(storedUser));
   }, []);
 
   useEffect(() => {
@@ -26,24 +34,39 @@ const ProjectCard = ({ project, countRooms }) => {
     }
   }, [isHovered, project.images]);
 
-  // ✅ Folosim doar types, nu mai trimitem floors
   const bedrooms = countRooms(["Dormitor", "Dormitor matrimonial"]);
   const bathrooms = countRooms(["Baie", "Baie matrimoniala", "Grup sanitar"]);
   const offices = countRooms(["Birou"]);
   const garages = countRooms(["Garaj"]);
 
+  const handleEditClick = (e) => {
+    e.stopPropagation(); // prevenim click pe card
+    sessionStorage.setItem("selectedProject", JSON.stringify(project));
+    router.push(`/edit-project?id=${project.id}`);
+  };
+
   return (
     <div
       onClick={() => {
-        // stocăm proiectul complet în sessionStorage
         sessionStorage.setItem("selectedProject", JSON.stringify(project));
         router.push({
           pathname: "/project-details",
-          query: { title: project.name }, // pentru URL
+          query: { title: project.name },
         });
       }}
-      className="cursor-pointer bg-gray-100 rounded-lg shadow-lg overflow-hidden hover:shadow-2xl transition-transform duration-300 flex flex-col sm:flex-row hover:scale-[1.01]"
+      className="relative cursor-pointer bg-gray-100 rounded-lg shadow-lg overflow-hidden hover:shadow-2xl transition-transform duration-300 flex flex-col sm:flex-row hover:scale-[1.01]"
     >
+      {/* Edit Button (ADMIN only) */}
+      {loggedUser?.email === ADMIN_EMAIL && (
+        <button
+          onClick={handleEditClick}
+          className="absolute bottom-3 right-3 bg-[#3D3B3B] hover:bg-gray-800 text-white p-2 rounded-full shadow-lg transition"
+          title="Editează proiectul"
+        >
+          <Pen size={18} />
+        </button>
+      )}
+
       <div
         className="relative sm:w-1/2 w-full h-56"
         onMouseEnter={() => setIsHovered(true)}
