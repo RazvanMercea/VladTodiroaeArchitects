@@ -39,10 +39,12 @@ const EditProject = ({ storage }) => {
   const [images, setImages] = useState([]);
   const [floors, setFloors] = useState([]);
   const [plans, setPlans] = useState({});
+  const [userLoading, setUserLoading] = useState(true);
 
   useEffect(() => {
     const storedUser = localStorage.getItem("loggedUser");
     if (storedUser) setLoggedUser(JSON.parse(storedUser));
+    setUserLoading(false);
   }, []);
 
   useEffect(() => {
@@ -55,6 +57,7 @@ const EditProject = ({ storage }) => {
         if (!snap.exists()) {
           toast.error("Proiectul nu a fost găsit.");
           router.push("/");
+          setLoading(false);
           return;
         }
         const data = snap.data();
@@ -89,7 +92,7 @@ const EditProject = ({ storage }) => {
   setFloors(defaultFloors);
 }, [projectCategory]);
 
-  if (!router.isReady || !loggedUser || loading) return <SpinnerOverlay />;
+  if (!router.isReady || userLoading || loading) return <SpinnerOverlay />;
   if (loggedUser.email !== ADMIN_EMAIL)
     return (
       <div className="flex justify-center items-center min-h-screen">
