@@ -55,7 +55,7 @@ const EditProjectPage = () => {
         try {
         const snapshot = await getDocs(collection(db, "projects"));
         const projectData = snapshot.docs
-            .map((doc) => ({ id: doc.id, ...doc.data() }))
+            .map((doc) => ({ docId: doc.id, ...doc.data() }))
             .find((p) => p.name === title);
 
         if (!projectData) {
