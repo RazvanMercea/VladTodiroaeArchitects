@@ -82,12 +82,12 @@ const EditProject = ({ storage }) => {
     fetchProject();
   }, [router.isReady, id]);
 
-    useEffect(() => {
-    if (floors.length > 0) return;
-    const rule = CATEGORY_FLOOR_RULES[projectCategory] || { defaultFloors: [] };
-    const defaultFloors = rule.defaultFloors.map(floor => ({ type: floor, rooms: [] }));
-    setFloors(defaultFloors);
-    }, [projectCategory, floors]);
+  useEffect(() => {
+  if (floors.length > 0) return;
+  const rule = CATEGORY_FLOOR_RULES[projectCategory] || { defaultFloors: [] };
+  const defaultFloors = rule.defaultFloors.map(floor => ({ type: floor, rooms: [] }));
+  setFloors(defaultFloors);
+}, [projectCategory]);
 
   if (!router.isReady || !loggedUser || loading) return <SpinnerOverlay />;
   if (loggedUser.email !== ADMIN_EMAIL)
