@@ -32,6 +32,7 @@ const EditProjectPage = () => {
   const [plans, setPlans] = useState({});
   const [floors, setFloors] = useState([]);
   const [previewImage, setPreviewImage] = useState(null);
+  const [internalId, setInternalId] = useState(null);
 
   useEffect(() => {
     const storedUser = localStorage.getItem("loggedUser");
@@ -64,6 +65,7 @@ const EditProjectPage = () => {
         }
 
         setProjectId(projectData.docId);
+        setInternalId(projectData.id);
         setProjectName(projectData.name);
         setProjectCategory(projectData.category);
         setProjectPrice(projectData.price);
@@ -269,7 +271,7 @@ const EditProjectPage = () => {
 
       {/* Top Band */}
       <div
-        className="fixed w-full h-12 flex justify-between items-center px-6 text-sm text-white shadow-md"
+        className="fixed w-full h-12 z-50 flex justify-between items-center px-6 text-sm text-white shadow-md"
         style={{ backgroundColor: "#3D3B3B" }}
       >
         <div>
@@ -296,7 +298,7 @@ const EditProjectPage = () => {
       </div>
 
       {/* Main Content */}
-      <div className="flex-grow overflow-auto px-6 py-8 space-y-10 pt-16">
+      <div className="flex-grow overflow-auto px-6 py-8 space-y-10 pt-16 relative z-0">
         {/* Project Name */}
         <div>
           <h2 className="text-2xl font-semibold mb-4 text-gray-800">
@@ -602,8 +604,8 @@ const EditProjectPage = () => {
       </div>
 
       {/* FOOTER */}
-      <footer className="w-full bg-gray-900 text-white py-6 mt-auto">
-        <div className="flex flex-col md:flex-row justify-between items-center px-6 text-sm space-y-3 md:space-y-0">
+      <footer className="w-full bg-[#3D3B3B] text-white py-6 mt-auto">
+        <div className="flex flex-col md:flex-row justify-start md:justify-between items-center px-6 text-sm space-y-3 md:space-y-0">
           <div className="flex items-center gap-2">
             <Phone size={16} />
             <span>{CONTACT_PHONE}</span>
