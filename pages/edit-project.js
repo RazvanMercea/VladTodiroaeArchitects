@@ -52,8 +52,10 @@ const EditProject = ({ storage }) => {
 
     const fetchProject = async () => {
       try {
+        console.log("Fetching project...");
         const docRef = doc(db, "projects", id);
         const snap = await getDoc(docRef);
+        console.log("Document fetched:", snap.exists());
         if (!snap.exists()) {
           toast.error("Proiectul nu a fost găsit.");
           router.push("/");
@@ -61,6 +63,7 @@ const EditProject = ({ storage }) => {
           return;
         }
         const data = snap.data();
+        console.log("Project data:", data);
         setProjectName(data.name || "");
         setProjectCategory(data.category || CATEGORIES[0]);
         setProjectPrice(data.price || "");
@@ -75,9 +78,11 @@ const EditProject = ({ storage }) => {
         );
         setFloors(data.floors || []);
       } catch (error) {
-        console.error(error);
+        //console.error(error);
+        console.error("Error fetching project:", error);
         toast.error("Eroare la încărcarea proiectului.");
       } finally {
+        console.log("Setting loading to false");
         setLoading(false);
       }
     };
