@@ -2,28 +2,14 @@ import React, { useState, useEffect } from "react";
 import { useRouter } from "next/router";
 import { db, auth, storage } from "@/lib/firebase";
 import { signOut } from "firebase/auth";
-import {
-  Phone,
-  Mail,
-  X,
-  Plus,
-  Trash2,
-} from "lucide-react";
+import {Phone,Mail,X,Plus,Trash2,} from "lucide-react";
 import toast, { Toaster } from "react-hot-toast";
 import SpinnerOverlay from "@/components/SpinnerOverlay";
-import {
-  CATEGORIES,
-  ROOM_TYPES,
-} from "@/lib/constants";
-import {
-  CATEGORY_FLOOR_RULES,
-  ALL_FLOORS,
-} from "@/lib/helpers";
+import {CATEGORIES,ROOM_TYPES,} from "@/lib/constants";
+import {CATEGORY_FLOOR_RULES,ALL_FLOORS,} from "@/lib/helpers";
 import { validateProject } from "@/lib/projectValidation";
-import {
-  updateProjectInDatabase,
-  deleteProjectFromDatabase,
-} from "@/lib/projectService";
+import {updateProjectInDatabase,deleteProjectFromDatabase,} from "@/lib/projectService";
+import { collection, getDocs } from "firebase/firestore";
 
 const CONTACT_PHONE = process.env.NEXT_PUBLIC_CONTACT_PHONE;
 const CONTACT_EMAIL = process.env.NEXT_PUBLIC_CONTACT_EMAIL;
@@ -63,17 +49,18 @@ const EditProjectPage = () => {
 
   useEffect(() => {
     if (!title) return;
+
     const fetchProject = async () => {
-      try {
-        const snapshot = await db.collection("projects").get();
+        try {
+        const snapshot = await getDocs(collection(db, "projects"));
         const projectData = snapshot.docs
-          .map((doc) => ({ id: doc.id, ...doc.data() }))
-          .find((p) => p.name === title);
+            .map((doc) => ({ id: doc.id, ...doc.data() }))
+            .find((p) => p.name === title);
 
         if (!projectData) {
-          toast.error("Proiectul nu a fost găsit.");
-          router.push("/");
-          return;
+            toast.error("Proiectul nu a fost găsit.");
+            router.push("/");
+            return;
         }
 
         setProjectId(projectData.id);
@@ -83,31 +70,25 @@ const EditProjectPage = () => {
         setTotalMP(projectData.totalMP);
         setUsableMP(projectData.usableMP);
 
-        // Images
-        const imageObjects = projectData.images.map((url) => ({ url }));
-        setImages(imageObjects);
-
-        // Floors
+        setImages(projectData.images.map((url) => ({ url })));
         setFloors(projectData.floors || []);
 
-        // Plans
         const plansObj = {};
         for (const floor in projectData.plans) {
-          plansObj[floor] = { url: projectData.plans[floor] };
+            plansObj[floor] = { url: projectData.plans[floor] };
         }
         setPlans(plansObj);
-
-      } catch (err) {
+        } catch (err) {
         console.error(err);
         toast.error("Eroare la încărcarea proiectului.");
         router.push("/");
-      } finally {
+        } finally {
         setLoading(false);
-      }
+        }
     };
 
     fetchProject();
-  }, [title]);
+    }, [title]);
 
   useEffect(() => {
     const rule = CATEGORY_FLOOR_RULES[projectCategory];
@@ -632,9 +613,6 @@ const EditProjectPage = () => {
           <div className="flex items-center gap-2">
             <Mail size={16} />
             <span>{CONTACT_EMAIL}</span>
-          </div>
-          <div className="text-gray-400 text-xs">
-            © {new Date().getFullYear()} Proiecte Case | Toate drepturile rezervate.
           </div>
         </div>
       </footer>
