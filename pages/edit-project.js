@@ -49,11 +49,13 @@ const EditProject = ({ storage }) => {
 
   useEffect(() => {
     if (!router.isReady || !id) return;
+    console.log("Fetching project with ID:", id);
 
     const fetchProject = async () => {
       try {
         const docRef = doc(db, "projects", id);
         const snap = await getDoc(docRef);
+        console.log("Document snapshot exists?", snap.exists());
         if (snap.exists()) {
           const data = snap.data();
 
