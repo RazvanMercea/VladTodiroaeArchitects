@@ -63,7 +63,7 @@ const EditProjectPage = () => {
             return;
         }
 
-        setProjectId(projectData.id);
+        setProjectId(projectData.docId);
         setProjectName(projectData.name);
         setProjectCategory(projectData.category);
         setProjectPrice(projectData.price);
@@ -103,7 +103,6 @@ const EditProjectPage = () => {
 
   if (loading) return <SpinnerOverlay />;
 
-  // ---------- Helper functions ----------
   const handleLogout = () => {
     signOut(auth).then(() => {
       localStorage.removeItem("loggedUser");
@@ -263,7 +262,6 @@ const EditProjectPage = () => {
     );
   };
 
-  // ---------- JSX ----------
   return (
     <div className="min-h-screen flex flex-col bg-white">
       <Toaster position="top-right" />
