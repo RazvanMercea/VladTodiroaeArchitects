@@ -513,7 +513,8 @@ const AddProjectPage = () => {
       {/* Buttons */}
       <div className="flex justify-center gap-6 my-6 pb-24">
         <button
-          onClick={() =>
+          onClick={() => {
+            toast.dismiss();
             toast(
               (t) => (
                 <div className="text-center">
@@ -522,7 +523,7 @@ const AddProjectPage = () => {
                     <button
                       onClick={() => {
                         toast.dismiss(t.id);
-                        router.push("/"); // revine la main page
+                        router.push("/");
                       }}
                       className="bg-[#3D3B3B] hover:bg-gray-700 text-white font-semibold px-6 py-3 rounded-lg shadow-md transition transform hover:scale-105"
                     >
@@ -538,8 +539,8 @@ const AddProjectPage = () => {
                 </div>
               ),
               { duration: 4000 }
-            )
-          }
+            );
+          }}
           className="bg-[#3D3B3B] hover:bg-gray-700 text-white font-semibold px-6 py-3 rounded-lg shadow-md transition transform hover:scale-105"
         >
           Anulați
