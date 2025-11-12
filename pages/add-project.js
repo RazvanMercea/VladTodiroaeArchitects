@@ -29,13 +29,23 @@ const AddProjectPage = () => {
   const [images, setImages] = useState([]);
   const [previewImage, setPreviewImage] = useState(null);
 
-  const [floors, setFloors] = useState([]); // {type, rooms: [{roomType, mp}]}
+  const [floors, setFloors] = useState([]);
   const [plans, setPlans] = useState({});
 
   useEffect(() => {
-    const storedUser = localStorage.getItem("loggedUser");
-    if (storedUser) setLoggedUser(JSON.parse(storedUser));
-  }, []);
+  const storedUser = localStorage.getItem("loggedUser");
+  if (!storedUser) {
+    router.push("/login");
+    return;
+  }
+  const user = JSON.parse(storedUser);
+  setLoggedUser(user);
+  if (user.email !== ADMIN_EMAIL) {
+    toast.error("Nu aveți permisiunea să adăugați proiecte.");
+    router.push("/");
+  }
+}, []);
+
 
   useEffect(() => {
     const rule = CATEGORY_FLOOR_RULES[projectCategory];
@@ -165,7 +175,7 @@ const AddProjectPage = () => {
     <div className="min-h-screen flex flex-col bg-white">
       <Toaster position="top-right" />
       {loading && <SpinnerOverlay />}
-      
+
       {/* Top Band */}
       <div
         className="fixed w-full h-12 flex justify-between items-center px-6 text-sm text-white shadow-md"
