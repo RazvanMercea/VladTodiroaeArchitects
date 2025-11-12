@@ -3,7 +3,7 @@ import { db, auth } from "@/lib/firebase";
 import { signOut } from "firebase/auth";
 import { Phone, Mail, X, Plus, Trash2 } from "lucide-react";
 import { useRouter } from "next/router";
-import toast from "react-hot-toast";
+import toast, { Toaster } from "react-hot-toast";
 import { CATEGORIES, ROOM_TYPES } from "@/lib/constants";
 import { CATEGORY_FLOOR_RULES, ALL_FLOORS } from "@/lib/helpers";
 import { validateProject } from "@/lib/projectValidation";
@@ -163,6 +163,7 @@ const AddProjectPage = () => {
 
   return (
     <div className="min-h-screen flex flex-col bg-white">
+      <Toaster position="top-right" />
       {loading && <SpinnerOverlay />}
       {/* Top Band */}
       <div
@@ -514,16 +515,17 @@ const AddProjectPage = () => {
       <div className="flex justify-center gap-6 my-6 pb-24">
         <button
           onClick={() => {
+            const toastId = `cancel-${Date.now()}`;
             toast.dismiss();
             toast(
               (t) => (
                 <div className="text-center">
-                  <p className="font-semibold mb-3">Abandonati planul?</p>
+                  <p className="font-semibold mb-3">Abandonați planul?</p>
                   <div className="flex justify-center gap-3">
                     <button
                       onClick={() => {
                         toast.dismiss(t.id);
-                        router.push("/");
+                        setTimeout(() => router.push("/"), 150);
                       }}
                       className="bg-[#3D3B3B] hover:bg-gray-700 text-white font-semibold px-6 py-3 rounded-lg shadow-md transition transform hover:scale-105"
                     >
@@ -538,13 +540,14 @@ const AddProjectPage = () => {
                   </div>
                 </div>
               ),
-              { duration: 4000 }
+              { id: toastId, duration: 4000 }
             );
           }}
           className="bg-[#3D3B3B] hover:bg-gray-700 text-white font-semibold px-6 py-3 rounded-lg shadow-md transition transform hover:scale-105"
         >
           Anulați
         </button>
+
 
         <button
             onClick={async () => {
