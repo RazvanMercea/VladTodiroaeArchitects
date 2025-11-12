@@ -3,7 +3,7 @@ import { Phone, Mail, Eye, EyeOff } from "lucide-react";
 import { useRouter } from "next/router";
 import { auth } from "@/lib/firebase";
 import { signInWithEmailAndPassword } from "firebase/auth";
-import toast from "react-hot-toast";
+import toast,{Toaster} from "react-hot-toast";
 
 const CONTACT_PHONE = process.env.NEXT_PUBLIC_CONTACT_PHONE;
 const CONTACT_EMAIL = process.env.NEXT_PUBLIC_CONTACT_EMAIL;
@@ -51,6 +51,8 @@ const LoginPage = () => {
 
   return (
     <div className="min-h-screen flex flex-col bg-white">
+      <Toaster position="top-right" />
+      
       {/* Top band */}
       <div
         className="w-full h-12 flex justify-between items-center px-6 text-sm text-white shadow-md"
