@@ -81,7 +81,7 @@ const AddProjectPage = () => {
   }, [projectCategory]);
 
   useEffect(() => {
-    if (projectCategory !== "Custom Build") {
+    if (projectCategory !== "Proiecte Custom Build") {
       setVariantOf("");
     }
   }, [projectCategory]);
@@ -387,20 +387,20 @@ const AddProjectPage = () => {
               className="w-full border border-gray-400 bg-gray-100 text-gray-800 rounded-md px-4 py-2 focus:outline-none focus:ring-2 focus:ring-gray-500"
             />
           </div>
-        </div>
 
-        {/* Recommended Land MP */}
-        <div>
-          <label className="block mb-1 font-semibold text-gray-700">
-            Metri pătrați recomandați pentru teren
-          </label>
-          <input
-            type="number"
-            step="0.1"
-            value={landMP}
-            onChange={(e) => setLandMP(e.target.value)}
-            className="w-full border border-gray-400 bg-gray-100 text-gray-800 rounded-md px-4 py-2 focus:outline-none focus:ring-2 focus:ring-gray-500"
-          />
+          {/* Recommended Land MP */}
+          <div>
+            <label className="block mb-1 font-semibold text-gray-700">
+              Metri pătrați recomandați pentru teren
+            </label>
+            <input
+              type="number"
+              step="0.1"
+              value={landMP}
+              onChange={(e) => setLandMP(e.target.value)}
+              className="w-full border border-gray-400 bg-gray-100 text-gray-800 rounded-md px-4 py-2 focus:outline-none focus:ring-2 focus:ring-gray-500"
+            />
+          </div>
         </div>
 
         {/* Compartimentare */}
