@@ -10,9 +10,10 @@ const CONTACT_EMAIL = process.env.NEXT_PUBLIC_CONTACT_EMAIL;
 const ADMIN_EMAIL = process.env.NEXT_PUBLIC_ADMIN_EMAIL;
 
 const CARD_DATA = [
-  { image: "/constructions.jpeg", text: "Proiecte Case Parter" },
-  { image: "/plans.jpeg", text: "Proiecte Case Etaj" },
-  { image: "/icon.jpeg", text: "Proiecte Case Mansarda" },
+  { image: "/plans.jpeg", text: "Proiecte Case Parter" },
+  { image: "/constructions.jpeg", text: "Proiecte Case Etaj" },
+  { image: "/mansarda.jpeg", text: "Proiecte Case Mansarda" },
+  { image: "/icon.jpeg", text: "Proiecte Custom Build" },
 ];
 
 const MainPage = () => {

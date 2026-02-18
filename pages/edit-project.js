@@ -18,16 +18,18 @@ const ADMIN_EMAIL = process.env.NEXT_PUBLIC_ADMIN_EMAIL;
 const EditProjectPage = () => {
   const router = useRouter();
   const { title } = router.query;
-
+  const [existingProjects, setExistingProjects] = useState([]);
   const [loading, setLoading] = useState(true);
   const [loggedUser, setLoggedUser] = useState(null);
 
   const [projectId, setProjectId] = useState(null);
   const [projectName, setProjectName] = useState("");
   const [projectCategory, setProjectCategory] = useState(CATEGORIES[0]);
+  const [variantOf, setVariantOf] = useState("");
   const [projectPrice, setProjectPrice] = useState("");
   const [totalMP, setTotalMP] = useState("");
   const [usableMP, setUsableMP] = useState("");
+  const [landMP, setLandMP] = useState("");
   const [images, setImages] = useState([]);
   const [plans, setPlans] = useState({});
   const [floors, setFloors] = useState([]);
@@ -47,6 +49,29 @@ const EditProjectPage = () => {
       router.push("/");
     }
   }, []);
+
+  useEffect(() => {
+    const fetchProjects = async () => {
+      try {
+        const snapshot = await getDocs(collection(db, "projects"));
+        const list = snapshot.docs.map(doc => ({
+          docId: doc.id,
+          ...doc.data()
+        }));
+        setExistingProjects(list);
+      } catch (err) {
+        console.error("Error loading projects:", err);
+      }
+    };
+
+    fetchProjects();
+  }, []);
+
+  useEffect(() => {
+  if (projectCategory !== "Proiecte Custom Build") {
+    setVariantOf("");
+  }
+  }, [projectCategory]);
 
   useEffect(() => {
     if (!title) return;
@@ -71,6 +96,8 @@ const EditProjectPage = () => {
         setProjectPrice(projectData.price);
         setTotalMP(projectData.totalMP);
         setUsableMP(projectData.usableMP);
+        setLandMP(projectData.landMP || "");
+        setVariantOf(projectData.variantOf || "");
 
         setImages(projectData.images.map((url) => ({ url })));
         setFloors(projectData.floors || []);
@@ -90,7 +117,7 @@ const EditProjectPage = () => {
     };
 
     fetchProject();
-    }, [title]);
+  }, [title]);
 
   useEffect(() => {
     const rule = CATEGORY_FLOOR_RULES[projectCategory];
@@ -200,7 +227,8 @@ const EditProjectPage = () => {
         totalMP,
         usableMP,
         floors,
-        plans
+        plans,
+        landMP
       )
     ) {
       toast.error("Completați toate câmpurile corect!");
@@ -214,6 +242,8 @@ const EditProjectPage = () => {
       price: Number(projectPrice),
       totalMP: Number(totalMP),
       usableMP: Number(usableMP),
+      landMP: Number(landMP),
+      variantOf: variantOf || null,
       floors,
       images,
       plans,
@@ -340,6 +370,30 @@ const EditProjectPage = () => {
             </select>
           </div>
 
+          {projectCategory === "Proiecte Custom Build" && (
+          <div>
+            <label className="block mb-1 font-semibold text-gray-700">
+              Varianta a proiectului
+            </label>
+
+            <select
+              value={variantOf}
+              onChange={(e) => setVariantOf(e.target.value)}
+              className="w-full border border-gray-400 bg-white text-gray-800 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-gray-500"
+            >
+              <option value="">N/A</option>
+
+              {existingProjects
+                .filter(p => p.name !== projectName)
+                .map(p => (
+                  <option key={p.docId} value={p.name}>
+                    {p.name}
+                  </option>
+                ))}
+            </select>
+          </div>
+          )}
+
           {/* Images */}
           <div>
             <label className="block mb-1 font-semibold text-gray-700">
@@ -416,6 +470,18 @@ const EditProjectPage = () => {
                 step="0.1"
                 value={usableMP}
                 onChange={(e) => setUsableMP(e.target.value)}
+                className="w-full border border-gray-400 bg-gray-100 text-gray-800 rounded-md px-4 py-2 focus:outline-none focus:ring-2 focus:ring-gray-500"
+              />
+            </div>
+            <div>
+              <label className="block mb-1 font-semibold text-gray-700">
+                Metri pătrați recomandați pentru teren
+              </label>
+              <input
+                type="number"
+                step="0.1"
+                value={landMP}
+                onChange={(e) => setLandMP(e.target.value)}
                 className="w-full border border-gray-400 bg-gray-100 text-gray-800 rounded-md px-4 py-2 focus:outline-none focus:ring-2 focus:ring-gray-500"
               />
             </div>
