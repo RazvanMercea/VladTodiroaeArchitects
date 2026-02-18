@@ -166,7 +166,9 @@ const ProjectDetail = () => {
   const [variants, setVariants] = useState([]);
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
+    useEffect(() => {
+    if (!projectName) return;
+
     const fetchVariants = async () => {
       try {
         const querySnapshot = await getDocs(collection(db, "projects"));
@@ -650,9 +652,7 @@ const ProjectDetail = () => {
         </div>
 
         {/*Alte Variante ale acestei constructii*/}        
-        {project.name && (
-          <OtherVariantsSection projectName={project.name} />
-        )}
+        {project ? (<OtherVariantsSection projectName={project.name} />) : null}
 
         {/* Proiecte similare */}
         <div className="mt-10">
