@@ -30,6 +30,8 @@ const ProjectDetail = () => {
   const [loggedUser, setLoggedUser] = useState(null);
   const [similarProjects, setSimilarProjects] = useState([]);
   const [loadingSimilar, setLoadingSimilar] = useState(true);
+  const [customVariants, setCustomVariants] = useState([]);
+  const [loadingVariants, setLoadingVariants] = useState(true);
   const [contactData, setContactData] = useState({ name: "", email: "", message: "" });
 
   useEffect(() => {
@@ -50,6 +52,7 @@ const ProjectDetail = () => {
           setProject(projectData);
           console.log("Project inside render:", project);
           fetchSimilarProjects(projectData.category, projectData.name);
+          fetchCustomVariants(projectData.name);
         } else {
           router.push("/");
         }
@@ -99,6 +102,30 @@ const ProjectDetail = () => {
       console.error("Error fetching similar projects:", error);
     } finally {
       setLoadingSimilar(false);
+    }
+  };
+
+  const fetchCustomVariants = async (baseProjectName) => {
+    try {
+      setLoadingVariants(true);
+      const querySnapshot = await getDocs(collection(db, "projects"));
+      const allProjects = querySnapshot.docs.map((doc) => ({
+        id: doc.id,
+        ...doc.data(),
+      }));
+
+      const variants = allProjects.filter(
+        (p) =>
+          p.category === "Proiecte Custom Build" &&
+          p.variantOf === baseProjectName &&
+          p.images?.length > 0
+      );
+
+      setCustomVariants(variants);
+    } catch (error) {
+      console.error("Error fetching custom variants:", error);
+    } finally {
+      setLoadingVariants(false);
     }
   };
 
@@ -605,7 +632,38 @@ const ProjectDetail = () => {
           </div>
         </div>
 
-        {/*Alte Variante ale acestei constructii*/}        
+        {/*Alte Variante ale acestei constructii*/}
+        <div className="mt-10">
+          <div className="bg-[#3D3B3B] text-white px-6 py-3 rounded-t-lg text-2xl font-semibold shadow-lg">
+            Alte variante ale acestei constructii
+          </div>
+          <div className="bg-gray-100 rounded-b-lg shadow-lg p-6">
+            {loadingVariants ? (
+              <SpinnerOverlay />
+            ) : customVariants.length === 0 ? (
+              <p className="text-gray-700 text-center py-10">
+                Nu există alte variante pentru această construcție.
+              </p>
+            ) : (
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                {customVariants.map((p) => (
+                  <ProjectCard
+                    key={p.id}
+                    project={p}
+                    countRooms={(types) =>
+                      p.floors?.reduce((acc, floor) => {
+                        floor.rooms?.forEach((r) => {
+                          if (types.includes(r.roomType)) acc++;
+                        });
+                        return acc;
+                      }, 0)
+                    }
+                  />
+                ))}
+              </div>
+            )}
+          </div>
+        </div>        
 
         {/* Proiecte similare */}
         <div className="mt-10">
