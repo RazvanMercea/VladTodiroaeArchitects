@@ -12,7 +12,7 @@ const ADMIN_EMAIL = process.env.NEXT_PUBLIC_ADMIN_EMAIL;
 const CARD_DATA = [
   { image: "/plans.jpeg", text: "Proiecte Case Parter" },
   { image: "/constructions.jpeg", text: "Proiecte Case Etaj" },
-  { image: "/mansarda.jpeg", text: "Proiecte Case Mansarda" },
+  { image: "/mansarda.jpg", text: "Proiecte Case Mansarda" },
   { image: "/icon.jpeg", text: "Proiecte Custom Build" },
 ];
 

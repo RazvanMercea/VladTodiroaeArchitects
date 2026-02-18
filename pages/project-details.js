@@ -8,11 +8,13 @@ import { CATEGORIES } from "@/lib/constants";
 import { collection, getDocs } from "firebase/firestore";
 import { db } from "@/lib/firebase";
 import toast, { Toaster } from "react-hot-toast";
+import { Phone, Mail, X } from "lucide-react";
 
 const ProjectDetail = () => {
   const router = useRouter();
   const { title } = router.query;
 
+  const [showContactForm, setShowContactForm] = useState(false);
   const [project, setProject] = useState(null);
   const [loading, setLoading] = useState(true);
   const [previewImage, setPreviewImage] = useState(null);
@@ -160,6 +162,51 @@ const ProjectDetail = () => {
     router.reload();
   };
 
+  const OtherVariantsSection = ({ projectName }) => {
+  const [variants, setVariants] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchVariants = async () => {
+      try {
+        const querySnapshot = await getDocs(collection(db, "projects"));
+        const allProjects = querySnapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
+        const filtered = allProjects.filter(
+          (p) => p.category === "Proiecte Custom Build" && p.variantOf === projectName
+        );
+        setVariants(filtered);
+      } catch (error) {
+        console.error("Error fetching variants:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchVariants();
+  }, [projectName]);
+
+  if (!variants.length) return null;
+
+  return (
+      <div className="mt-10">
+        <div className="bg-[#3D3B3B] text-white px-6 py-3 rounded-t-lg text-2xl font-semibold shadow-lg">
+          Alte variante ale acestei construcții
+        </div>
+        <div className="bg-gray-100 rounded-b-lg shadow-lg p-6">
+          {loading ? (
+            <SpinnerOverlay />
+          ) : (
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+              {variants.map((p) => (
+                <ProjectCard key={p.id} project={p} />
+              ))}
+            </div>
+          )}
+        </div>
+      </div>
+    );
+  };
+
   return (
     <div className="min-h-screen flex flex-col">
        <Toaster position="top-right" />
@@ -277,10 +324,10 @@ const ProjectDetail = () => {
               )}
             </div>
 
-            {/* Informatii generale */}
+            {/* Caracteristiticle casei */}
             <div className="p-6 bg-gray-100 rounded-lg shadow-md space-y-4">
               <h2 className="text-2xl font-semibold text-gray-800">
-                Informatii generale
+                Caracteristiticle casei
               </h2>
               <div className="flex flex-wrap gap-6 text-gray-700">
                 <div className="flex flex-col items-center">
@@ -366,6 +413,9 @@ const ProjectDetail = () => {
               <p>
                 Metri pătrați utili: {project.usableMP} m<sup>2</sup>
               </p>
+              <p>
+                Recomandare pentru mărimea terenului: {project.landMP} m<sup>2</sup>
+              </p>
             </div>
 
             {/* Planuri de nivel */}
@@ -396,6 +446,26 @@ const ProjectDetail = () => {
                 />
               )}
             </div>
+
+            {/* informatii generale */}
+            <div className="p-6 bg-gray-100 rounded-lg shadow-md">
+              <h2 className="text-2xl font-semibold text-gray-800 mb-4">
+                Informații generale
+              </h2>
+              <p>
+                În preț sunt incluse și 2 modificări ale planului (mutare geamuri, recompartimentare). Pentru acest tip de modificare, prețului i se va aplica o taxă extra de 30%.
+              </p>
+              <p className="mt-2">
+                Pentru modificări mai mari (structură, proiecte personalizate) vă rugăm să ne contactați:
+                <button
+                  onClick={() => setShowContactForm(true)}
+                  className="ml-2 underline text-[#3D3B3B] font-semibold hover:text-gray-800"
+                >
+                  Contact
+                </button>
+              </p>
+            </div>
+
           </div>
 
           {/* Sidebar */}
@@ -579,6 +649,11 @@ const ProjectDetail = () => {
           </div>
         </div>
 
+        {/*Alte Variante ale acestei constructii*/}        
+        {project.name && (
+          <OtherVariantsSection projectName={project.name} />
+        )}
+
         {/* Proiecte similare */}
         <div className="mt-10">
           <div className="bg-[#3D3B3B] text-white px-6 py-3 rounded-t-lg text-2xl font-semibold shadow-lg">Proiecte similare</div>
@@ -619,8 +694,48 @@ const ProjectDetail = () => {
         </div>
       )}
 
+      {/* Contact popup overlay */}
+      {showContactForm && (
+        <div className="fixed inset-0 bg-black/50 flex justify-center items-center z-50">
+          <div className="bg-white rounded-xl w-full max-w-md p-6 relative shadow-lg">
+            <button onClick={() => setShowContactForm(false)} className="absolute top-3 right-3 text-gray-600 hover:text-gray-900">
+              <X size={20} />
+            </button>
+            <h2 className="text-2xl font-semibold mb-4 text-gray-800">Contact</h2>
+            <form onSubmit={handleContactSubmit} className="flex flex-col gap-4">
+              <input
+                type="text"
+                placeholder="Nume Prenume"
+                value={contactData.name}
+                onChange={(e) => setContactData({ ...contactData, name: e.target.value })}
+                className="border rounded-lg p-2 focus:outline-none focus:ring-2 focus:ring-gray-700"
+              />
+              <input
+                type="email"
+                placeholder="Adresă de email"
+                value={contactData.email}
+                onChange={(e) => setContactData({ ...contactData, email: e.target.value })}
+                className="border rounded-lg p-2 focus:outline-none focus:ring-2 focus:ring-gray-700"
+              />
+              <textarea
+                placeholder="Mesajul Dumneavoastră"
+                value={contactData.message}
+                onChange={(e) => setContactData({ ...contactData, message: e.target.value })}
+                className="border rounded-lg p-2 focus:outline-none focus:ring-2 focus:ring-gray-700 resize-none h-32"
+              />
+              <button type="submit" className="bg-[#3D3B3B] hover:bg-gray-800 text-white font-semibold py-2 rounded-lg transition">
+                Solicitați Informațiile
+              </button>
+            </form>
+          </div>
+        </div>
+      )}
+
       {/* Footer */}
       <footer className="fixed w-full h-10 flex justify-end items-center px-6 text-sm text-white shadow-md bg-[#3D3B3B] bottom-0 z-10">
+        <button onClick={() => setShowContactForm(true)} className="text-white font-semibold hover:text-gray-300 transition">
+          Contact
+        </button>
         <div className="flex items-center gap-6">
           <div className="flex items-center gap-2">
             <Phone size={16} />
