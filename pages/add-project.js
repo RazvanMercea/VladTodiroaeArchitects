@@ -281,7 +281,7 @@ const AddProjectPage = () => {
           </div>
 
           {/* Variant Of */}
-          {projectCategory === "Custom Build" && (
+          {projectCategory === "Proiecte Custom Build" && (
             <div>
               <label className="block mb-1 font-semibold text-gray-700">
                 Varianta a proiectului
