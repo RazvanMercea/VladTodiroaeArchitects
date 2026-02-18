@@ -48,6 +48,7 @@ const ProjectDetail = () => {
 
         if (projectData) {
           setProject(projectData);
+          console.log("Project inside render:", project);
           fetchSimilarProjects(projectData.category, projectData.name);
         } else {
           router.push("/");
@@ -160,53 +161,6 @@ const ProjectDetail = () => {
     localStorage.removeItem("loggedUser");
     setLoggedUser(null);
     router.reload();
-  };
-
-  const OtherVariantsSection = ({ projectName }) => {
-  const [variants, setVariants] = useState([]);
-  const [loading, setLoading] = useState(true);
-
-    useEffect(() => {
-    if (!projectName) return;
-
-    const fetchVariants = async () => {
-      try {
-        const querySnapshot = await getDocs(collection(db, "projects"));
-        const allProjects = querySnapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
-        const filtered = allProjects.filter(
-          (p) => p.category === "Proiecte Custom Build" && p.variantOf === projectName
-        );
-        setVariants(filtered);
-      } catch (error) {
-        console.error("Error fetching variants:", error);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchVariants();
-  }, [projectName]);
-
-  if (!variants.length) return null;
-
-  return (
-      <div className="mt-10">
-        <div className="bg-[#3D3B3B] text-white px-6 py-3 rounded-t-lg text-2xl font-semibold shadow-lg">
-          Alte variante ale acestei construcții
-        </div>
-        <div className="bg-gray-100 rounded-b-lg shadow-lg p-6">
-          {loading ? (
-            <SpinnerOverlay />
-          ) : (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-              {variants.map((p) => (
-                <ProjectCard key={p.id} project={p} />
-              ))}
-            </div>
-          )}
-        </div>
-      </div>
-    );
   };
 
   return (
@@ -652,7 +606,6 @@ const ProjectDetail = () => {
         </div>
 
         {/*Alte Variante ale acestei constructii*/}        
-        {project ? (<OtherVariantsSection projectName={project.name} />) : null}
 
         {/* Proiecte similare */}
         <div className="mt-10">
