@@ -8,7 +8,7 @@ import { CATEGORIES } from "@/lib/constants";
 import { collection, getDocs } from "firebase/firestore";
 import { db } from "@/lib/firebase";
 import toast, { Toaster } from "react-hot-toast";
-import { Phone, Mail, X } from "lucide-react";
+import { X } from "lucide-react";
 
 const ProjectDetail = () => {
   const router = useRouter();
