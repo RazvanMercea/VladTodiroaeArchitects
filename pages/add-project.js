@@ -10,6 +10,7 @@ import { validateProject } from "@/lib/projectValidation";
 import { addProjectToDatabase } from "@/lib/projectService";
 import { v4 as uuidv4 } from "uuid";
 import SpinnerOverlay from "@/components/SpinnerOverlay";
+import { collection, getDocs } from "firebase/firestore";
 
 const CONTACT_PHONE = process.env.NEXT_PUBLIC_CONTACT_PHONE;
 const CONTACT_EMAIL = process.env.NEXT_PUBLIC_CONTACT_EMAIL;
@@ -18,14 +19,16 @@ const ADMIN_EMAIL = process.env.NEXT_PUBLIC_ADMIN_EMAIL;
 const AddProjectPage = () => {
   const router = useRouter();
   const [loggedUser, setLoggedUser] = useState(null);
-
+  const [existingProjects, setExistingProjects] = useState([]);
   const [loading, setLoading] = useState(false);
 
   const [projectName, setProjectName] = useState("");
   const [projectCategory, setProjectCategory] = useState(CATEGORIES[0]);
+  const [variantOf, setVariantOf] = useState("");
   const [projectPrice, setProjectPrice] = useState("");
   const [totalMP, setTotalMP] = useState("");
   const [usableMP, setUsableMP] = useState("");
+  const [landMP, setLandMP] = useState("");
   const [images, setImages] = useState([]);
   const [previewImage, setPreviewImage] = useState(null);
 
@@ -46,6 +49,24 @@ const AddProjectPage = () => {
   }
 }, []);
 
+  useEffect(() => {
+    const fetchProjects = async () => {
+      try {
+        const snapshot = await getDocs(collection(db, "projects"));
+
+        const list = snapshot.docs.map(doc => ({
+          docId: doc.id,
+          ...doc.data()
+        }));
+
+        setExistingProjects(list);
+      } catch (err) {
+        console.error("Error loading projects:", err);
+      }
+    };
+
+    fetchProjects();
+  }, []);
 
   useEffect(() => {
     const rule = CATEGORY_FLOOR_RULES[projectCategory];
@@ -57,6 +78,12 @@ const AddProjectPage = () => {
       });
       return newFloors;
     });
+  }, [projectCategory]);
+
+  useEffect(() => {
+    if (projectCategory !== "Custom Build") {
+      setVariantOf("");
+    }
   }, [projectCategory]);
 
   const handleLogout = () => {
@@ -253,6 +280,31 @@ const AddProjectPage = () => {
             </select>
           </div>
 
+          {/* Variant Of */}
+          {projectCategory === "Custom Build" && (
+            <div>
+              <label className="block mb-1 font-semibold text-gray-700">
+                Varianta a proiectului
+              </label>
+
+              <select
+                value={variantOf}
+                onChange={(e) => setVariantOf(e.target.value)}
+                className="w-full border border-gray-400 bg-white text-gray-800 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-gray-500"
+              >
+                <option value="">N/A</option>
+
+                {existingProjects
+                  .filter(p => p.name !== projectName)
+                  .map(p => (
+                    <option key={p.id} value={p.name}>
+                      {p.name}
+                    </option>
+                  ))}
+              </select>
+            </div>
+          )}
+
           {/* Images */}
           <div>
             <label className="block mb-1 font-semibold text-gray-700">
@@ -335,6 +387,20 @@ const AddProjectPage = () => {
               className="w-full border border-gray-400 bg-gray-100 text-gray-800 rounded-md px-4 py-2 focus:outline-none focus:ring-2 focus:ring-gray-500"
             />
           </div>
+        </div>
+
+        {/* Recommended Land MP */}
+        <div>
+          <label className="block mb-1 font-semibold text-gray-700">
+            Metri pătrați recomandați pentru teren
+          </label>
+          <input
+            type="number"
+            step="0.1"
+            value={landMP}
+            onChange={(e) => setLandMP(e.target.value)}
+            className="w-full border border-gray-400 bg-gray-100 text-gray-800 rounded-md px-4 py-2 focus:outline-none focus:ring-2 focus:ring-gray-500"
+          />
         </div>
 
         {/* Compartimentare */}
@@ -569,7 +635,8 @@ const AddProjectPage = () => {
                 totalMP,
                 usableMP,
                 floors,
-                plans
+                plans,
+                landMP
                 );
 
                 if (!isValid) {
@@ -587,6 +654,8 @@ const AddProjectPage = () => {
                 price: Number(projectPrice),
                 totalMP: Number(totalMP),
                 usableMP: Number(usableMP),
+                landMP: Number(landMP),
+                variantOf: variantOf || null,
                 floors,
                 createdBy: loggedUser?.email || "unknown",
                 createdAt: new Date().toISOString(),
