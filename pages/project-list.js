@@ -301,7 +301,7 @@ const ProjectList = () => {
                 <span>Cu garaj</span>
               </label>
 
-              <label className="flex items-center gap-2 mb-2">
+              <label className="flex items-center gap-2 mb-4">
                 <input type="checkbox" checked={filters.hasDressing} onChange={(e) => setFilters({ ...filters, hasDressing: e.target.checked })}/>
                 <span>Cu dressing</span>
               </label>

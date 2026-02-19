@@ -24,8 +24,10 @@ const ProjectDetail = () => {
     bedrooms: "",
     bathrooms: "",
     hasGarage: false,
-    maxMP: "",
-    priceRange: [250, 10000],
+    hasDressing: false,
+    openSpace: false,
+    sortMP: "",
+    sortPrice: "",
   });
   const [loggedUser, setLoggedUser] = useState(null);
   const [similarProjects, setSimilarProjects] = useState([]);
@@ -176,11 +178,10 @@ const ProjectDetail = () => {
     if (filters.bedrooms) query.bedrooms = filters.bedrooms;
     if (filters.bathrooms) query.bathrooms = filters.bathrooms;
     if (filters.hasGarage) query.hasGarage = filters.hasGarage;
-    if (filters.maxMP) query.maxMP = filters.maxMP;
-    if (filters.priceRange) {
-      query.priceMin = filters.priceRange[0];
-      query.priceMax = filters.priceRange[1];
-    }
+    if (filters.hasDressing) query.hasDressing = filters.hasDressing;
+    if (filters.openSpace) query.openSpace = filters.openSpace;
+    if (filters.sortMP) query.sortMP = filters.sortMP;
+    if (filters.sortPrice) query.sortPrice = filters.sortPrice;
     router.push({ pathname: "/project-list", query });
   };
 
@@ -545,60 +546,36 @@ const ProjectDetail = () => {
                 <span>Cu garaj</span>
               </label>
 
-              <label className="block mb-2 font-medium text-gray-700">
-                Metri pătrați maximi:
+              <label className="flex items-center gap-2 mb-4">
+                <input type="checkbox" checked={filters.hasDressing} onChange={(e) => setFilters({ ...filters, hasDressing: e.target.checked })}/>
+                <span>Cu dressing</span>
               </label>
-              <input
-                type="number"
-                value={filters.maxMP}
-                onChange={(e) =>
-                  setFilters({ ...filters, maxMP: e.target.value })
-                }
-                className="w-full border rounded-lg p-2 mb-4"
-                placeholder="ex: 150"
-              />
 
-              <label className="block mb-2 font-medium text-gray-700">
-                Interval preț (€): {filters.priceRange[0]} -{" "}
-                {filters.priceRange[1]}
+              <label className="flex items-center gap-2 mb-4"> <input type="checkbox" checked={filters.openSpace} onChange={(e) => setFilters({ ...filters, openSpace: e.target.checked })}/>
+                <span>Open space</span>
               </label>
-              <Range
-                step={50}
-                min={250}
-                max={10000}
-                values={filters.priceRange}
-                onChange={(values) =>
-                  setFilters({ ...filters, priceRange: values })
-                }
-                renderTrack={({ props, children }) => (
-                  <div
-                    {...props}
-                    className="h-2 rounded-full bg-gray-300 mt-3 mb-6 relative"
-                  >
-                    <div
-                      style={{
-                        position: "absolute",
-                        height: "100%",
-                        background: "#3D3B3B",
-                        left: `${((filters.priceRange[0] - 250) /
-                          (10000 - 250)) *
-                          100}%`,
-                        width: `${((filters.priceRange[1] -
-                          filters.priceRange[0]) /
-                          (10000 - 250)) *
-                          100}%`,
-                      }}
-                    />
-                    {children}
-                  </div>
-                )}
-                renderThumb={({ props }) => (
-                  <div
-                    {...props}
-                    className="w-5 h-5 bg-[#3D3B3B] rounded-full cursor-pointer"
-                  />
-                )}
-              />
+
+              <label className="block mb-2 font-medium text-gray-700">Sortare după suprafață teren:</label>
+              <select
+                value={filters.sortMP}
+                onChange={(e) => setFilters({ ...filters, sortMP: e.target.value })}
+                className="w-full border rounded-lg p-2 mb-4"
+              >
+                <option value="">Implicit</option>
+                <option value="asc">Crescător</option>
+                <option value="desc">Descrescător</option>
+              </select>
+
+              <label className="block mb-2 font-medium text-gray-700">Sortare după preț:</label>
+              <select
+                value={filters.sortPrice}
+                onChange={(e) => setFilters({ ...filters, sortPrice: e.target.value })}
+                className="w-full border rounded-lg p-2 mb-4"
+              >
+                <option value="">Implicit</option>
+                <option value="asc">Crescător</option>
+                <option value="desc">Descrescător</option>
+              </select>
 
               <button
                 onClick={handleFilterDetail}
