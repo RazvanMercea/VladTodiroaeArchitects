@@ -12,7 +12,7 @@ import toast, { Toaster } from "react-hot-toast";
 
 const ProjectList = () => {
   const router = useRouter();
-  const { category, bedrooms: qBedrooms, bathrooms: qBathrooms, hasGarage: qHasGarage, maxMP: qMaxMP, priceMin, priceMax } = router.query;
+  const { category, bedrooms: qBedrooms, bathrooms: qBathrooms, hasGarage: qHasGarage, openSpace: qOpenSpace,sortMP: qSortMP,sortPrice: qSortPrice } = router.query;
   const [projects, setProjects] = useState([]);
   const [filteredProjects, setFilteredProjects] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -21,8 +21,10 @@ const ProjectList = () => {
     bedrooms: "",
     bathrooms: "",
     hasGarage: false,
-    maxMP: "",
-    priceRange: [250, 10000],
+    hasDressing: false,
+    openSpace: false,
+    sortMP: "",
+    sortPrice: "",
   });
   const [showContactForm, setShowContactForm] = useState(false);
   const [contactData, setContactData] = useState({ name: "", email: "", message: "" });
@@ -39,11 +41,13 @@ const ProjectList = () => {
     if (qBedrooms) initialFilters.bedrooms = qBedrooms;
     if (qBathrooms) initialFilters.bathrooms = qBathrooms;
     if (qHasGarage) initialFilters.hasGarage = qHasGarage === "true";
-    if (qMaxMP) initialFilters.maxMP = qMaxMP;
-    if (priceMin && priceMax) initialFilters.priceRange = [Number(priceMin), Number(priceMax)];
+    if (qHasDressing) initialFilters.hasDressing = qHasDressing === "true";
+    if (qOpenSpace) initialFilters.openSpace = qOpenSpace === "true";
+    if (qSortMP) initialFilters.sortMP = qSortMP;
+    if (qSortPrice) initialFilters.sortPrice = qSortPrice;
 
     setFilters(initialFilters);
-  }, [category, qBedrooms, qBathrooms, qHasGarage, qMaxMP, priceMin, priceMax]);
+  }, [category, qBedrooms, qBathrooms, qHasGarage, qHasDressing, qOpenSpace, qSortMP, qSortPrice]);
 
   // Fetch projects by category
   useEffect(() => {
@@ -85,29 +89,56 @@ const ProjectList = () => {
   }, [category]);
 
   const applyFilters = () => {
-  let result = [...projects];
-  const { bedrooms, bathrooms, hasGarage, maxMP, priceRange } = filters;
+    let result = [...projects];
+    const { bedrooms, bathrooms, hasGarage, hasDressing, openSpace, sortMP, sortPrice } = filters;
 
-  const countRoomsLocal = (project, types) => {
-    let total = 0;
-    project.floors?.forEach(floor =>
-      floor.rooms?.forEach(r => {
-        if (types.includes(r.roomType)) total++;
-      })
-    );
-    return total;
+    const countRoomsLocal = (project, types) => {
+      let total = 0;
+      project.floors?.forEach(floor =>
+        floor.rooms?.forEach(r => {
+          if (types.includes(r.roomType)) total++;
+        })
+      );
+      return total;
+    };
+
+    const hasRoomType = (project, types) => {
+      return project.floors?.some(floor =>
+        floor.rooms?.some(r => types.includes(r.roomType))
+      );
+    };
+
+    if (bedrooms)
+      result = result.filter(p => countRoomsLocal(p, ["Dormitor", "Dormitor matrimonial"]) === Number(bedrooms));
+
+    if (bathrooms)
+      result = result.filter(p => countRoomsLocal(p, ["Baie", "Baie matrimoniala", "Grup sanitar"]) === Number(bathrooms));
+
+    if (hasGarage)
+      result = result.filter(p => hasRoomType(p, ["Garaj"]));
+
+    if (hasDressing)
+      result = result.filter(p => hasRoomType(p, ["Dressing"]));
+
+    if (openSpace)
+      result = result.filter(p => hasRoomType(p, ["Bucatarie open space", "Living open space"]));
+
+    result.sort((a, b) => {
+      if (sortMP) {
+        const diff = Number(a.usableMP || 0) - Number(b.usableMP || 0);
+        if (diff !== 0) return sortMP === "asc" ? diff : -diff;
+      }
+
+      if (sortPrice) {
+        const diff = Number(a.price || 0) - Number(b.price || 0);
+        if (diff !== 0) return sortPrice === "asc" ? diff : -diff;
+      }
+
+      return 0;
+    });
+
+    setFilteredProjects(result);
   };
-
-  if (bedrooms) result = result.filter(p => countRoomsLocal(p, ["Dormitor", "Dormitor matrimonial"]) === Number(bedrooms));
-  if (bathrooms) result = result.filter(p => countRoomsLocal(p, ["Baie", "Baie matrimoniala", "Grup sanitar"]) === Number(bathrooms));
-  if (hasGarage) result = result.filter(p => countRoomsLocal(p, ["Garaj"]) > 0);
-  if (maxMP) result = result.filter(p => Number(p.usableMP) <= Number(maxMP));
-  if (priceRange[0] > 250 || priceRange[1] < 10000) {
-    result = result.filter(p => Number(p.price) >= priceRange[0] && Number(p.price) <= priceRange[1]);
-  }
-
-  setFilteredProjects(result);
-};
 
   const handleFilterButton = () => {
     applyFilters();
@@ -118,9 +149,10 @@ const ProjectList = () => {
         bedrooms: filters.bedrooms || undefined,
         bathrooms: filters.bathrooms || undefined,
         hasGarage: filters.hasGarage || undefined,
-        maxMP: filters.maxMP || undefined,
-        priceMin: filters.priceRange[0],
-        priceMax: filters.priceRange[1],
+        hasDressing: filters.hasDressing || undefined,
+        openSpace: filters.openSpace || undefined,
+        sortMP: filters.sortMP || undefined,
+        sortPrice: filters.sortPrice || undefined,
       },
     }, undefined, { shallow: true });
   };
@@ -269,24 +301,36 @@ const ProjectList = () => {
                 <span>Cu garaj</span>
               </label>
 
-              <label className="block mb-2 font-medium text-gray-700">Metri pătrați maximi:</label>
-              <input type="number" value={filters.maxMP} onChange={(e) => setFilters({ ...filters, maxMP: e.target.value })} className="w-full border rounded-lg p-2 mb-4" placeholder="ex: 150" />
+              <label className="flex items-center gap-2 mb-2">
+                <input type="checkbox" checked={filters.hasDressing} onChange={(e) => setFilters({ ...filters, hasDressing: e.target.checked })}/>
+                <span>Cu dressing</span>
+              </label>
 
-              <label className="block mb-2 font-medium text-gray-700">Interval preț (€): {filters.priceRange[0]} - {filters.priceRange[1]}</label>
-              <Range
-                step={50}
-                min={250}
-                max={10000}
-                values={filters.priceRange}
-                onChange={(values) => setFilters({ ...filters, priceRange: values })}
-                renderTrack={({ props, children }) => (
-                  <div {...props} className="h-2 rounded-full bg-gray-300 mt-3 mb-6 relative">
-                    <div style={{ position: "absolute", height: "100%", background: "#3D3B3B", left: `${((filters.priceRange[0]-250)/(10000-250))*100}%`, width: `${((filters.priceRange[1]-filters.priceRange[0])/(10000-250))*100}%` }} />
-                    {children}
-                  </div>
-                )}
-                renderThumb={({ props }) => <div {...props} className="w-5 h-5 bg-[#3D3B3B] rounded-full cursor-pointer" />}
-              />
+              <label className="flex items-center gap-2 mb-4"> <input type="checkbox" checked={filters.openSpace} onChange={(e) => setFilters({ ...filters, openSpace: e.target.checked })}/>
+                <span>Open space</span>
+              </label>
+
+              <label className="block mb-2 font-medium text-gray-700">Sortare după suprafață teren:</label>
+              <select
+                value={filters.sortMP}
+                onChange={(e) => setFilters({ ...filters, sortMP: e.target.value })}
+                className="w-full border rounded-lg p-2 mb-4"
+              >
+                <option value="">Implicit</option>
+                <option value="asc">Crescător</option>
+                <option value="desc">Descrescător</option>
+              </select>
+
+              <label className="block mb-2 font-medium text-gray-700">Sortare după preț:</label>
+              <select
+                value={filters.sortPrice}
+                onChange={(e) => setFilters({ ...filters, sortPrice: e.target.value })}
+                className="w-full border rounded-lg p-2 mb-4"
+              >
+                <option value="">Implicit</option>
+                <option value="asc">Crescător</option>
+                <option value="desc">Descrescător</option>
+              </select>
 
               <button onClick={handleFilterButton} className="w-full bg-[#3D3B3B] hover:bg-gray-800 text-white font-semibold py-2 rounded-lg transition">Căutați</button>
             </div>
