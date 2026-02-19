@@ -12,7 +12,7 @@ import toast, { Toaster } from "react-hot-toast";
 
 const ProjectList = () => {
   const router = useRouter();
-  const { category, bedrooms: qBedrooms, bathrooms: qBathrooms, hasGarage: qHasGarage, openSpace: qOpenSpace,sortMP: qSortMP,sortPrice: qSortPrice } = router.query;
+  const { category, bedrooms: qBedrooms, bathrooms: qBathrooms, hasGarage: qHasGarage,hasDressing: qHasDressing, openSpace: qOpenSpace,sortMP: qSortMP,sortPrice: qSortPrice } = router.query;
   const [projects, setProjects] = useState([]);
   const [filteredProjects, setFilteredProjects] = useState([]);
   const [loading, setLoading] = useState(true);
